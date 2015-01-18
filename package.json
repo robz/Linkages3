@@ -7,7 +7,7 @@
   "scripts": {
     "watch": "watchify src/main.js -t [ reactify --es6 --strip-types ] -o build/bundle.js -v -d",
     "check": "flow check src --profile",
-    "build": "flow check src --profile && browserify src/main.js -t [ reactify --es6 --strip-types ] | uglifyjs -am > build/bundle.js"
+    "build": "flow check src --profile && mkdir build && browserify src/main.js -t [ reactify --es6 --strip-types ] | uglifyjs -am > build/bundle.js"
   },
   "devDependencies": {
     "browserify": "^6.2.0",
