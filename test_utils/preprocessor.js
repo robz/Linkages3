@@ -2,6 +2,6 @@ var ReactTools = require('react-tools');
 
 module.exports = {
   process: function(src) {
-    return ReactTools.transform(src, {stripTypes:true});
+    return ReactTools.transform(src, {stripTypes:true, harmony:true});
   }
 };
