@@ -2,18 +2,25 @@
   "version": "0.0.1",
   "main": "src/main.js",
   "dependencies": {
-    "react": "^0.12.2"
+    "react": "*",
+    "react-tools": "*"
   },
   "scripts": {
     "watch": "watchify src/main.js -t [ reactify --es6 --strip-types ] -o build/bundle.js -v -d",
     "check": "flow check src --profile",
-    "build": "flow check src --profile && mkdir build && browserify src/main.js -t [ reactify --es6 --strip-types ] | uglifyjs -am > build/bundle.js"
+    "build": "flow check src --profile && mkdir build && browserify src/main.js -t [ reactify --es6 --strip-types ] | uglifyjs -am > build/bundle.js",
+    "test": "jest"
   },
   "devDependencies": {
     "browserify": "^6.2.0",
     "flow": "0.2.3",
+    "jest-cli": "^0.2.1",
     "reactify": "0.17.1",
-    "uglify-js": "2.4.16", 
+    "uglify-js": "2.4.16",
     "watchify": "2.2.1"
+  },
+  "jest": {
+    "scriptPreprocessor": "test_utils/preprocessor.js",
+    "unmockedModulePathPatterns": ["./node_modules/react"]
   }
 }
