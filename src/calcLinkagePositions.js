@@ -1,4 +1,7 @@
 /* @flow */
+
+'use strict';
+
 var utils = require('./LinkageCalculationUtils');
 
 /*
@@ -49,54 +52,48 @@ calcPositions({
 
 */
 
-function calcLinkagePositions({points, extenders, groundPoints}: Object): Object {
+function calcLinkagePositions(
+  {points, extenders, groundPoints}: Object
+): Object {
   var positions = {};
-  var numPoints = Object.keys(points).length;
-  var ii = 0;
-  var numCalculated = 0;
 
-  var id, knownAdjacents;
+  var idList = Object.keys(points);
+  var oldLength;
 
-  while (numCalculated < numPoints) {
-    id = Object.keys(points)[(ii++) % numPoints];
-    console.log(id, positions);
+  do {
+    oldLength = idList.length;
+    idList = idList.filter((id) => {
+      if (groundPoints[id]) {
+        positions[id] = groundPoints[id];
+      } else if (
+        extenders[id] && 
+        positions[extenders[id].base] && 
+        positions[extenders[id].ref]
+      ) {
+        positions[id] = utils.calcFromExtender(
+          positions[extenders[id].base],
+          positions[extenders[id].ref],
+          extenders[id].len,
+          extenders[id].angle
+        );
+      } else {
+        var knownAdjacents = Object.keys(points[id]).filter(
+          adj => positions[adj]
+        );
 
-    if (positions[id]) {
-      continue;
-    }
+        if (knownAdjacents.length >= 2) { 
+          positions[id] = utils.calcFromTriangle(
+            positions[knownAdjacents[0]],
+            positions[knownAdjacents[1]],
+            points[id][knownAdjacents[0]].len,
+            points[id][knownAdjacents[1]].len
+          );
+        }
+      }
 
-    if (groundPoints[id]) {
-      positions[id] = groundPoints[id];
-      numCalculated++;
-      continue;
-    }
-
-    if (
-      extenders[id] && 
-      positions[extenders[id].base] && 
-      positions[extenders[id].ref]
-    ) {
-      positions[id] = utils.calcFromExtender(
-        positions[extenders[id].base],
-        positions[extenders[id].ref],
-        extenders[id].len,
-        extenders[id].angle
-      );
-      numCalculated++;
-      continue;
-    }
-
-    knownAdjacents = Object.keys(points[id]).filter(adj => positions[adj]);
-    if (knownAdjacents.length >= 2) { 
-      positions[id] = utils.calcFromTriangle(
-        positions[knownAdjacents[0]],
-        positions[knownAdjacents[1]],
-        points[id][knownAdjacents[0]].len,
-        points[id][knownAdjacents[1]].len
-      );
-      numCalculated++;
-    }
-  };
+      return !positions[id];
+    });
+  } while (idList.length > 0 && idList.length < oldLength);
 
   return positions;
 }

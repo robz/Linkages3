@@ -1,4 +1,7 @@
 /* @flow */
+
+'use strict';
+
 type Point = {x: number; y: number};
 
 function euclid(p1: Point, p2: Point): number {
@@ -45,4 +48,4 @@ function calcFromExtender(
   };
 }
 
-module.exports = { euclid, calcFromTriangle, calcFromExtender };
+module.exports = {euclid, calcFromTriangle, calcFromExtender};

@@ -1,8 +1,10 @@
 /* @flow */
 
+'use strict';
+
 var calcLinkagePositions = require('./calcLinkagePositions');
 
-calcLinkagePositions({
+var positions = calcLinkagePositions({
   points: {
     p0: { 
       p1: { len: 1 },
