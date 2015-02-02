@@ -20,8 +20,8 @@ function init(canvasID: string, options: ?Object): Object {
   var canvas = document.getElementById(canvasID);
   var ctx = canvas.getContext('2d');
 
-  var _width = null;
-  var _height = null;
+  var _width = 0;
+  var _height = 0;
   formatCanvas(document.body.clientWidth, document.body.clientHeight);
 
   function formatCanvas(width, height) {
