@@ -2,6 +2,7 @@
 
 'use strict';
 
+var SCALE = 10;
 var POINT_COLOR = 'black';
 var LINE_COLOR = 'darkGray';
 var BACKGROUND_COLOR = 'lightGray';
@@ -13,13 +14,26 @@ function init(canvasID: string, options: ?Object): Object {
   var lineColor = (options && options.lineColor) || LINE_COLOR;
   var pointRadius = (options && options.pointRadius) || POINT_RADIUS;
   var lineWidth = (options && options.lineWidth) || LINE_WIDTH;
+  pointRadius /= SCALE;
+  lineWidth /= SCALE;
 
   var canvas = document.getElementById(canvasID);
   var ctx = canvas.getContext('2d');
-  canvas.width = document.body.clientWidth;
-  canvas.height = document.body.clientHeight;
-  var width = canvas.width;
-  var height = canvas.height;
+
+  var _width = null;
+  var _height = null;
+  formatCanvas(document.body.clientWidth, document.body.clientHeight);
+
+  function formatCanvas(width, height) {
+    canvas.width = width;
+    canvas.height = height;
+    _width = canvas.width;
+    _height = canvas.height;
+
+    ctx.scale(1, -1);
+    ctx.translate(_width/2, -_height/2);
+    ctx.scale(SCALE, SCALE);
+  }
 
   function pushPopContext(f) {
     return (...args) => {
@@ -50,7 +64,7 @@ function init(canvasID: string, options: ?Object): Object {
 
   var drawBackground = pushPopContext(() => {
     ctx.fillStyle = BACKGROUND_COLOR;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(-_width/2, -_height/2, _width, _height);
   });
 
   var drawLinkage = function ({points, positions}) {
