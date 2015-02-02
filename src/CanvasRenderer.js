@@ -8,13 +8,13 @@ var BACKGROUND_COLOR = 'lightGray';
 var POINT_RADIUS = 4;
 var LINE_WIDTH = 4;
 
-function init(canvasID: string, options: Object): Object {
+function init(canvasID: string, options: ?Object): Object {
   var pointColor = (options && options.pointColor) || POINT_COLOR;
   var lineColor = (options && options.lineColor) || LINE_COLOR;
   var pointRadius = (options && options.pointRadius) || POINT_RADIUS;
   var lineWidth = (options && options.lineWidth) || LINE_WIDTH;
 
-  var canvas = document.getElement(canvasID);
+  var canvas = document.getElementById(canvasID);
   var ctx = canvas.getContext('2d');
   canvas.width = document.body.clientWidth;
   canvas.height = document.body.clientHeight;
@@ -23,13 +23,13 @@ function init(canvasID: string, options: Object): Object {
 
   function pushPopContext(f) {
     return (...args) => {
-      context.save();
-      f(...args);
-      context.restore();
+      ctx.save();
+      f.apply(null, args);
+      ctx.restore();
     };
   }
 
-  var drawPoint = pushPopContext(({x, y}) => {
+  var drawPoint = pushPopContext(function ({x, y}) {
     ctx.beginPath();
     ctx.arc(x, y, pointRadius, 0, 2 * Math.PI, true);
     ctx.fillStyle = pointColor;
@@ -53,16 +53,16 @@ function init(canvasID: string, options: Object): Object {
     ctx.fillRect(0, 0, width, height);
   });
 
-  var drawLinkage = ({points, positions}) => {
+  var drawLinkage = function ({points, positions}) {
     drawBackground();
     Object.keys(points).forEach((pointID) => {
-      var p0 = poisitions[pointID];
+      var p0 = positions[pointID];
       Object.keys(points[pointID]).forEach((pointID) => {
-        var pi = poisitions[pointID];
+        var pi = positions[pointID];
         drawLine(p0, pi); 
       });
     }); 
-  });
+  };
 
   return {drawPoint, drawLine, drawLinkage};
 }

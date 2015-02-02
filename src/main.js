@@ -41,7 +41,7 @@ var linkageData = {
   },
 };
 
-var renderLinakge = CanvasRenderer.init('mycanvas').renderLinkage;
+var drawLinkage = CanvasRenderer.init('mycanvas').drawLinkage;
 
 var positions = calcLinkagePositions(linkageData);
-renderLinkage({points: linkageData.points, positions});
+drawLinkage({points: linkageData.points, positions});
