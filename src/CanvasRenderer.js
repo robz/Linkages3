@@ -35,6 +35,16 @@ function init(canvasID: string, options: ?Object): Object {
     ctx.scale(SCALE, SCALE);
   }
 
+  function inverseTransform({x, y}) {
+    x *= 1;
+    y *= -1;
+    x -= _width/2;
+    y -= -_height/2;
+    x /= SCALE;
+    y /= SCALE;
+    return {x, y};
+  }
+
   function pushPopContext(f) {
     return (...args) => {
       ctx.save();
@@ -50,14 +60,14 @@ function init(canvasID: string, options: ?Object): Object {
     ctx.fill();
   });
 
-  var drawLine = pushPopContext((p1, p2) => {
+  var drawLine = pushPopContext((p1, p2, optLineColor) => {
     drawPoint(p1);
     drawPoint(p2);
 
     ctx.beginPath();
     ctx.moveTo(p1.x, p1.y);
     ctx.lineTo(p2.x, p2.y);
-    ctx.strokeStyle = lineColor;
+    ctx.strokeStyle = optLineColor || lineColor;
     ctx.lineWidth = lineWidth;
     ctx.stroke();
   });
@@ -78,7 +88,7 @@ function init(canvasID: string, options: ?Object): Object {
     }); 
   };
 
-  return {drawPoint, drawLine, drawLinkage};
+  return {drawPoint, drawLine, drawLinkage, inverseTransform};
 }
 
 module.exports = {init};
