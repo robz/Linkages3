@@ -3,11 +3,8 @@
 'use strict';
 
 var CanvasRenderer = require('./CanvasRenderer');
-var makeSegmentsFromLinkage = 
-  require('./LinkageCalculationUtils').makeSegmentsFromLinkage;
-var calcLinkagePositions = require('./calcLinkagePositions');
-var linkageData = require('./linkageData.js');
-var geometry = require('./geometry.js');
+var LinkageUtils = require('./LinkageUtils');
+var GeometryUtils = require('./GeometryUtils.js');
 
 var KEYS = {
   SPACE: 32,
@@ -15,76 +12,89 @@ var KEYS = {
   S: 115,
 };
 
-var renderer = null;
-var rotate = true;
-var inc = 0.04;
-var positions = null;
-var closestSegment = null;
-var closestPoint = null;
+var INC = 0.04;
 
-function animate() { 
-  if (rotate) {
-    linkageData.extenders.p2.angle += inc;
+class UI {
+  constructor(canvasID, linkageData) {
+    this.linkageData = linkageData;
+    this.renderer = CanvasRenderer.init(canvasID);
+    this.rotate = true;
+    this.positions = null;
+    this.inc = INC;
+
+    document.onkeypress = this.onKeyPress.bind(this);
+    document.onmousemove = this.onMouseMove.bind(this);
   }
 
-  positions = calcLinkagePositions(linkageData);
-  renderer.drawLinkage({points: linkageData.points, positions});
-  
-  if (!rotate && closestSegment) {
-    renderer.drawLine(closestSegment[0], closestSegment[1], 'red');
-  } else if (!rotate && closestPoint) {
-    renderer.drawPoint(closestPoint, 'red');
+  resetHoverables() {
+    this.closestSegment = null;
+    this.closestPoint = null;
   }
 
-  window.requestAnimationFrame(animate);
-}
-
-
-function init(canvasID) {
-  renderer = CanvasRenderer.init(canvasID);
-
-  document.onkeypress = function (e) {
+  onKeyPress(e) {
     if (e.which === KEYS.SPACE) {
-      rotate = !rotate;
-      if (rotate) {
-        closestSegment = null; 
+      this.rotate = !this.rotate;
+      if (this.rotate) {
+        this.resetHoverables();
       }
     } else if (e.which === KEYS.W) {
-      inc *= 1.1;
+      this.inc *= 1.1;
     } else if (e.which === KEYS.S) {
-      inc /= 1.1;
+      this.inc /= 1.1;
     } 
-  };
+  }
 
-  document.onmousemove = function (e) {
-    if (!rotate) {
-      closestPoint = null;
-      closestSegment = null;
+  onMouseMove(e) {
+    if (!this.rotate) {
+      this.resetHoverables();
 
-      var p3 = renderer.inverseTransform({x:e.x, y:e.y});
+      var p3 = this.renderer.inverseTransform({x:e.x, y:e.y});
 
-      var closestPointInfo = geometry.findClosestThingToPoint(
-        Object.keys(positions).map(id => positions[id]),
+      var closestPointInfo = GeometryUtils.findClosestThingToPoint(
+        Object.keys(this.positions).map(id => this.positions[id]),
         p3, 
-        geometry.euclid
+        GeometryUtils.euclid
+      );
+
+      var closestSegmentInfo = GeometryUtils.findClosestThingToPoint(
+        LinkageUtils.makeSegmentsFromLinkage(this.linkageData, this.positions),
+        p3, 
+        GeometryUtils.calcMinDistFromSegmentToPoint
       );
 
       if (closestPointInfo.thing) {
-        closestPoint = closestPointInfo.thing;
-        return;
+        this.closestPoint = closestPointInfo.thing;
+      } else {
+        this.closestSegment = closestSegmentInfo.thing;
       }
-
-      var closestSegmentInfo = geometry.findClosestThingToPoint(
-        makeSegmentsFromLinkage(linkageData, positions), 
-        p3, 
-        geometry.calcMinDistFromSegmentToPoint
-      );
-
-      closestSegment = closestSegmentInfo.thing;
     }
-  };
+  }
 
-  animate();
+  animate() {
+    if (this.rotate) {
+      this.linkageData.extenders.p2.angle += this.inc;
+    }
+
+    this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+    this.renderer.drawLinkage({
+      points: this.linkageData.points, 
+      positions: this.positions,
+    });
+    
+    if (!this.rotate) {
+      if (this.closestSegment) {
+        this.renderer.drawLine(
+          this.closestSegment[0], 
+          this.closestSegment[1], 
+          'red'
+        );
+      } else if (this.closestPoint) {
+        this.renderer.drawPoint(this.closestPoint, 'red');
+      }
+    }
+
+    window.requestAnimationFrame(this.animate.bind(this));
+  }
 }
 
-module.exports = {init};
+module.exports = UI;

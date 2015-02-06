@@ -1,8 +1,8 @@
-jest.dontMock('../LinkageCalculationUtils');
+jest.dontMock('../GeometryUtils');
 
 describe('euclid', function() {
   it('finds the euclidean distance between two points', function() {
-    var euclid = require('../LinkageCalculationUtils').euclid;
+    var euclid = require('../GeometryUtils').euclid;
     expect(euclid({x:3, y:0}, {x:0, y:4})).toBe(5);
   });
 });
@@ -10,7 +10,7 @@ describe('euclid', function() {
 describe('calcFromTriangle', function() {
   it('calculates a point on a triangle from the side lengths and other points',
     function() {
-      var calcFromTriangle = require('../LinkageCalculationUtils').calcFromTriangle;
+      var calcFromTriangle = require('../GeometryUtils').calcPointFromTriangle;
 
       var res1 = calcFromTriangle({x:3, y:0}, {x:0, y:4}, 3, 4);
       expect(res1.x).toBeCloseTo(0, 1e-10);

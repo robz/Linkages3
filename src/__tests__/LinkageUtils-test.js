@@ -1,6 +1,6 @@
 jest
-  .dontMock('../LinkageCalculationUtils')
-  .dontMock('../calcLinkagePositions');
+  .dontMock('../GeometryUtils')
+  .dontMock('../LinkageUtils');
 
 var linkageData = {
   points: {
@@ -40,7 +40,7 @@ var linkageData = {
 
 describe('calcLinkagePositions', function () {
   it('calculates linakges positions', function () {
-    var calcLinkagePositions = require('../calcLinkagePositions');
+    var calcLinkagePositions = require('../LinkageUtils').calcLinkagePositions;
     var res = calcLinkagePositions(linkageData);
     expect(res.p0).toBe(linkageData.groundPoints.p0);
     expect(res.p1).toBe(linkageData.groundPoints.p1);

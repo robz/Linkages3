@@ -1,3 +1,7 @@
+/* @flow */
+
+'use strict';
+
 type Point = {x: number; y: number};
 
 function euclid(p1: Point, p2: Point): number {

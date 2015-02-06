@@ -2,7 +2,19 @@
 
 'use strict';
 
-var utils = require('./geometry');
+var GeometryUtils = require('./GeometryUtils.js');
+
+function makeSegmentsFromLinkage({points}, positions) {
+  var segments = [];
+
+  Object.keys(points).forEach((pointID) => {
+    Object.keys(points[pointID]).forEach((point2ID) => {
+      segments.push([positions[pointID], positions[point2ID]]);
+    })
+  });
+
+  return segments;
+}
 
 function calcLinkagePositions(
   {points, extenders, groundPoints}: Object
@@ -22,7 +34,7 @@ function calcLinkagePositions(
         positions[extenders[id].base] && 
         positions[extenders[id].ref]
       ) {
-        positions[id] = utils.calcPointFromExtender(
+        positions[id] = GeometryUtils.calcPointFromExtender(
           positions[extenders[id].base],
           positions[extenders[id].ref],
           extenders[id].len,
@@ -34,7 +46,7 @@ function calcLinkagePositions(
         );
 
         if (knownAdjacents.length >= 2) { 
-          positions[id] = utils.calcPointFromTriangle(
+          positions[id] = GeometryUtils.calcPointFromTriangle(
             positions[knownAdjacents[0]],
             positions[knownAdjacents[1]],
             points[id][knownAdjacents[0]].len,
@@ -50,4 +62,4 @@ function calcLinkagePositions(
   return positions;
 }
 
-module.exports = calcLinkagePositions;
+module.exports = {makeSegmentsFromLinkage, calcLinkagePositions};
