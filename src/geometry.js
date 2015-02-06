@@ -1,58 +1,98 @@
-/* @flow */
-
-'use strict';
-
-var euclid = require('./LinkageCalculationUtils').euclid;
-
 type Point = {x: number; y: number};
 
-var sin = Math.sin;
-var cos = Math.cos;
-var atan2 = Math.atan2;
+function euclid(p1: Point, p2: Point): number {
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+  return Math.sqrt(dx * dx + dy * dy);
+}
 
-function pointToSegmentDistance(p1: Point, p2: Point, p3: Point): number {
-  var d = euclid(p1, p2);
-  var theta = atan2(p2.y - p1.y, p2.x - p1.x);
-  var sin_theta = sin(theta);
-  var cos_theta = cos(theta);
+function calcMinDistFromSegmentToPoint(
+  [p1, p2]: Array<Point>, 
+  p3: Point
+): number {
+  var point = null;
 
-  if (sin_theta === 0) {
-    // do something else
-    throw new Error('todo');
-  }
+  var theta = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+  var t = Math.sin(theta) * (p3.y - p1.y) + Math.cos(theta) * (p3.x - p1.x);
 
-  var term1 = (p3.y - p1.y) / (d * sin_theta);
-  var term2 = cos_theta * (p1.x - p3.x) / (d * sin_theta * sin_theta);
-  var term3 = (cos_theta * cos_theta)/(sin_theta * sin_theta) + 1;
-
-  if (term3 === 0) {
-    throw new Error('err');
-  }
-
-  var t = (term1 - term2) / term3;
- 
   if (t < 0) {
-    return euclid(p3, p1);
-  } else if (t > 1) {
-    return euclid(p3, p2);
+    point = p1;
+  } else if (t > euclid(p1, p2)) {
+    point = p2;
   } else {
-    return euclid(p3, {
-      x: p1.x + d * t * cos(theta),
-      y: p1.y + d * t * sin(theta),
-    });
+    point = {
+      x: p1.x + t * Math.cos(theta),
+      y: p1.y + t * Math.sin(theta),
+    };
   }
+
+  return euclid(point, p3); 
 }
 
-function closestSegmetnToPoint(p0: Point, segments: Array) {
-  return segments.reduce((current, segment, index) => {
-    var distance = pointToSegmentDistance(p0, segment[0], segment[1]);
-    if (distance < current.distance) {
-      current.distance = distance;
-      current.index = index;
+function findClosestThingToPoint(
+  things: Array<Object>, 
+  point: Point, 
+  distanceBetween: Function, 
+  startingThing: ?Object, 
+  startingDistance: ?number
+): {thing: Object; dist: number} {
+  return things.reduce((best, thing) => {
+    var dist = distanceBetween(thing, point);
+    if (dist < best.dist) {
+      best.dist = dist;
+      best.thing = thing;
     }
-    return current;
-  }, {
-    index: Number.MAX_VALUE,
-    distance: -1,
-  });
+    return best;
+  }, {thing:startingThing, dist:startingDistance || 1});
 }
+
+function calcPointFromTriangle(
+  p1: Point, 
+  p2: Point, 
+  a1: number, 
+  a2: number
+): Point {
+  var a3 = euclid(p1, p2);
+  if (a3 > a1 + a2) {
+    throw new Error('lengths of bars less that distance between joints');
+  }
+
+  var alpha1 = Math.acos((a1*a1 + a3*a3 - a2*a2)/(2*a1*a3));
+  if (!isFinite(alpha1)) {
+    throw new Error('bad acos calculation');
+  }
+
+  var dx = p2.x - p1.x;
+  var dy = p2.y - p1.y;
+  if (dx === 0 && dy === 0) {
+    throw new Error('enpoints are equal -> unknown angle');
+  }
+  var theta1 = Math.atan2(dy, dx);
+
+  return {
+    x: p1.x + a1 * Math.cos(alpha1 + theta1), 
+    y: p1.y + a1 * Math.sin(alpha1 + theta1),
+  };
+}
+
+function calcPointFromExtender(
+  p1: Point,
+  p2: Point, 
+  len: number, 
+  angle: number
+): Point {
+  var baseAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
+  angle += baseAngle;
+  return {
+    x: p1.x + len * Math.cos(angle),
+    y: p1.y + len * Math.sin(angle),
+  };
+}
+
+module.exports = {
+  euclid, 
+  calcMinDistFromSegmentToPoint,
+  findClosestThingToPoint,
+  calcPointFromTriangle, 
+  calcPointFromExtender, 
+};

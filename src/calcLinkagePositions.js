@@ -2,7 +2,7 @@
 
 'use strict';
 
-var utils = require('./LinkageCalculationUtils');
+var utils = require('./geometry');
 
 function calcLinkagePositions(
   {points, extenders, groundPoints}: Object
@@ -22,7 +22,7 @@ function calcLinkagePositions(
         positions[extenders[id].base] && 
         positions[extenders[id].ref]
       ) {
-        positions[id] = utils.calcFromExtender(
+        positions[id] = utils.calcPointFromExtender(
           positions[extenders[id].base],
           positions[extenders[id].ref],
           extenders[id].len,
@@ -34,7 +34,7 @@ function calcLinkagePositions(
         );
 
         if (knownAdjacents.length >= 2) { 
-          positions[id] = utils.calcFromTriangle(
+          positions[id] = utils.calcPointFromTriangle(
             positions[knownAdjacents[0]],
             positions[knownAdjacents[1]],
             points[id][knownAdjacents[0]].len,

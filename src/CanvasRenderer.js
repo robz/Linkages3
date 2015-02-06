@@ -53,10 +53,10 @@ function init(canvasID: string, options: ?Object): Object {
     };
   }
 
-  var drawPoint = pushPopContext(function ({x, y}) {
+  var drawPoint = pushPopContext(function ({x, y}, optPointColor) {
     ctx.beginPath();
     ctx.arc(x, y, pointRadius, 0, 2 * Math.PI, true);
-    ctx.fillStyle = pointColor;
+    ctx.fillStyle = optPointColor || pointColor;
     ctx.fill();
   });
 
