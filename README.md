@@ -8,7 +8,11 @@ $ sudo npm install
 $ npm run-script build
 ```
 
-Then open `index.html` with a browser (I've only tested in the lastest versions of Chrome). Here are the controls so far:
+Then open `index.html` with a browser (I've only tested in the lastest versions of Chrome). You should see this something like this linkage: 
+
+![Image of basic linkage](http://bit.ly/1uppWqY)
+
+Here are the controls so far:
 * Press space to pause
 * When paused, click and drag a ground point to move it around
 * When paused, hover over any bar*, and press `w` or `s` to change its length
