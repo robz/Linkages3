@@ -29,17 +29,30 @@ class UI {
     this.hoveredSegment = null;
     this.hoveredPoint = null;
 
-    document.onkeypress = this.onKeyPress.bind(this);
-    document.onmousemove = this.onMouseMove.bind(this);
-    document.onmousedown = (e) => {
-      this.mouseIsDown = true;
-    };
-    document.onmouseup = (e) => {
-      this.mouseIsDown = false;
-    };
+    document.onkeypress = this._onKeyPress.bind(this);
+    document.onmousemove = this._onMouseMove.bind(this);
+    document.onmousedown = (e) => { this.mouseIsDown = true; };
+    document.onmouseup = (e) => { this.mouseIsDown = false; };
   }
 
-  onKeyPress(e) {
+  animate() {
+    if (this.rotate) {
+      this._tryRotatingLinkageInput();
+    }
+    
+    this.renderer.drawLinkage({
+      points: this.linkageData.points, 
+      positions: this.positions,
+    });
+
+    if (!this.rotate) {
+      this._drawHoverables(this.hoveredPoint, this.hoveredSegment);
+    }
+
+    window.requestAnimationFrame(this.animate.bind(this));
+  }
+
+  _onKeyPress(e) {
     switch (e.which) {
       case KEYS.SPACE:
         this._toggleRotation();
@@ -70,6 +83,18 @@ class UI {
     }
   }
   
+  _onMouseMove(e) {
+    var currentPoint = this.renderer.inverseTransform({x:e.x, y:e.y});
+
+    if (!this.rotate) {
+      if (this.mouseIsDown && this.hoveredPoint) {
+        this._tryDraggingGroundPoint(currentPoint, this.hoveredPoint.id);
+      } else {
+        this._handleHover(currentPoint);
+      }
+    }
+  }
+
   _toggleRotation() {
     this.rotate = !this.rotate;
     if (this.rotate) {
@@ -112,18 +137,6 @@ class UI {
     } 
   }
 
-  onMouseMove(e) {
-    var currentPoint = this.renderer.inverseTransform({x:e.x, y:e.y});
-
-    if (!this.rotate) {
-      if (this.mouseIsDown && this.hoveredPoint) {
-        this._tryDraggingGroundPoint(currentPoint, this.hoveredPoint.id);
-      } else {
-        this._handleHover(currentPoint);
-      }
-    }
-  }
-
   _handleHover(currentPoint) {
     var {
       closestPointInfo: hoveredPointInfo, 
@@ -149,6 +162,10 @@ class UI {
   _tryDraggingGroundPoint(currentPoint, hoveredPointID) {
     var groundPoint = this.linkageData.groundPoints[this.hoveredPoint.id];
 
+    if (!groundPoint) {
+      return;
+    }
+
     try {
       var {x:prevX, y:prevY} = groundPoint;
       groundPoint.x = currentPoint.x;
@@ -159,23 +176,6 @@ class UI {
       groundPoint.y = prevY;
       this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
     } 
-  }
-
-  animate() {
-    if (this.rotate) {
-      this._tryRotatingLinkageInput();
-    }
-    
-    this.renderer.drawLinkage({
-      points: this.linkageData.points, 
-      positions: this.positions,
-    });
-
-    if (!this.rotate) {
-      this._drawHoverables(this.hoveredPoint, this.hoveredSegment);
-    }
-
-    window.requestAnimationFrame(this.animate.bind(this));
   }
 
   _tryRotatingLinkageInput() {
