@@ -4,12 +4,38 @@
 
 var GeometryUtils = require('./GeometryUtils.js');
 
+function getClosestThings(linkageData, positions, currentPoint) {
+  var points = Object.keys(positions).map(id => {
+    var res = positions[id];
+    res.id = id;
+    return res;
+  });
+
+  var closestPointInfo = GeometryUtils.findClosestThingToPoint(
+    points,
+    currentPoint,
+    GeometryUtils.euclid
+  );
+
+  var closestSegmentInfo = GeometryUtils.findClosestThingToPoint(
+    makeSegmentsFromLinkage(linkageData, positions),
+    currentPoint,
+    GeometryUtils.calcMinDistFromSegmentToPoint
+  );
+
+  return {closestPointInfo, closestSegmentInfo};
+}
+
 function makeSegmentsFromLinkage({points}, positions) {
   var segments = [];
 
   Object.keys(points).forEach((pointID) => {
+    var p0 = positions[pointID];
+    p0.id = pointID;
     Object.keys(points[pointID]).forEach((point2ID) => {
-      segments.push([positions[pointID], positions[point2ID]]);
+      var p1 = positions[point2ID];
+      p1.id = point2ID;
+      segments.push([p0, p1]);
     })
   });
 
@@ -62,4 +88,8 @@ function calcLinkagePositions(
   return positions;
 }
 
-module.exports = {makeSegmentsFromLinkage, calcLinkagePositions};
+module.exports = {
+  makeSegmentsFromLinkage, 
+  calcLinkagePositions, 
+  getClosestThings,
+};

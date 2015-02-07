@@ -8,13 +8,14 @@ module.exports = {
       p2: { len: 5 },
     },
     p2: {
-      p1: { len: 1 },
+      p1: { len: 5 },
       p3: { len: 10 },
       p7: { len: 10 },
     },
     p3: {
       p2: { len: 10 },
       p4: { len: 15 }, 
+      p5: { len: 10 },
       p7: { len: Math.sqrt(8 * 8 + 10 * 10) },
     },
     p5: {
@@ -42,14 +43,14 @@ module.exports = {
   },
   extenders: {
     p2: {
-      base: "p1",
-      ref: "p0",
+      base: 'p1',
+      ref: 'p0',
       angle: 0.9272952180016122, // atan(4/3)
       len: 5,
     },
     p7: {
-      base: "p2",
-      ref: "p3",
+      base: 'p2',
+      ref: 'p3',
       angle: Math.PI/2,
       len: 10,
     },

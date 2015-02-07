@@ -61,9 +61,6 @@ function init(canvasID: string, options: ?Object): Object {
   });
 
   var drawLine = pushPopContext((p1, p2, optLineColor) => {
-    drawPoint(p1);
-    drawPoint(p2);
-
     ctx.beginPath();
     ctx.moveTo(p1.x, p1.y);
     ctx.lineTo(p2.x, p2.y);
@@ -79,6 +76,7 @@ function init(canvasID: string, options: ?Object): Object {
 
   var drawLinkage = function ({points, positions}) {
     drawBackground();
+
     Object.keys(points).forEach((pointID) => {
       var p0 = positions[pointID];
       Object.keys(points[pointID]).forEach((pointID) => {
@@ -86,6 +84,10 @@ function init(canvasID: string, options: ?Object): Object {
         drawLine(p0, pi); 
       });
     }); 
+
+    Object.keys(points).forEach((pointID) => {
+      drawPoint(positions[pointID]);
+    });
   };
 
   return {drawPoint, drawLine, drawLinkage, inverseTransform};

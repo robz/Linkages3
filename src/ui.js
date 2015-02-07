@@ -7,93 +7,198 @@ var LinkageUtils = require('./LinkageUtils');
 var GeometryUtils = require('./GeometryUtils.js');
 
 var KEYS = {
+  A: 97,
+  D: 100,
+  S: 115,
   SPACE: 32,
   W: 119,
-  S: 115,
 };
 
-var INC = 0.04;
+var SPEED_INC = 0.04;
+var BAR_INC = 1;
 
 class UI {
   constructor(canvasID, linkageData) {
-    this.linkageData = linkageData;
     this.renderer = CanvasRenderer.init(canvasID);
-    this.rotate = true;
+    this.linkageData = linkageData;
+
     this.positions = null;
-    this.inc = INC;
+    this.rotate = true;
+    this.speedInc = SPEED_INC;
+    this.mouseIsDown = false;
+    this.hoveredSegment = null;
+    this.hoveredPoint = null;
 
     document.onkeypress = this.onKeyPress.bind(this);
     document.onmousemove = this.onMouseMove.bind(this);
-  }
-
-  resetHoverables() {
-    this.closestSegment = null;
-    this.closestPoint = null;
+    document.onmousedown = (e) => {
+      this.mouseIsDown = true;
+    };
+    document.onmouseup = (e) => {
+      this.mouseIsDown = false;
+    };
   }
 
   onKeyPress(e) {
-    if (e.which === KEYS.SPACE) {
-      this.rotate = !this.rotate;
-      if (this.rotate) {
-        this.resetHoverables();
-      }
-    } else if (e.which === KEYS.W) {
-      this.inc *= 1.1;
-    } else if (e.which === KEYS.S) {
-      this.inc /= 1.1;
+    switch (e.which) {
+      case KEYS.SPACE:
+        this._toggleRotation();
+        break;
+      case KEYS.W:
+        if (this.rotate) {
+          this._changeSpeed(1.1);
+        } else if (this.hoveredSegment) { 
+          this._tryChangingBarLength(
+            BAR_INC, 
+            this.hoveredSegment
+          );
+        }
+        break;
+      case KEYS.S:
+        if (this.rotate) {
+          this._changeSpeed(1/1.1);
+        } else if (this.hoveredSegment) { 
+          this._tryChangingBarLength(
+            -BAR_INC, 
+            this.hoveredSegment
+          );
+        }
+        break;
+      default: 
+        console.log(e.which);
+        break;
+    }
+  }
+  
+  _toggleRotation() {
+    this.rotate = !this.rotate;
+    if (this.rotate) {
+      this.hoveredPoint = null;
+      this.hoveredSegment = null;
+    }
+  }
+
+  _changeSpeed(factor) {
+    this.speedInc *= factor;
+  }
+
+  _tryChangingBarLength(lenChange, hoveredSegment) {
+    var p0id = hoveredSegment[0].id;
+    var p1id = hoveredSegment[1].id;
+    var oldLen = this.linkageData.points[p0id][p1id].len;
+    var newLen = oldLen + lenChange;
+
+    try {
+      this._changeBarLength(newLen, p0id, p1id);
+      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+    } catch (e) {
+      this._changeBarLength(oldLen, p0id, p1id);
+      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+    } 
+  }
+
+  _changeBarLength(len, p0id, p1id) {
+    this.linkageData.points[p0id][p1id].len = len;
+    this.linkageData.points[p1id][p0id].len = len;
+
+    var ext0 = this.linkageData.extenders[p0id];
+    var ext1 = this.linkageData.extenders[p1id];
+    console.log(ext0, ext1);
+
+    if (ext0 && ext0.base === p1id) {
+      ext0.len = len;
+    } else if (ext1 && ext1.base === p0id) {
+      ext1.len = len;
     } 
   }
 
   onMouseMove(e) {
+    var currentPoint = this.renderer.inverseTransform({x:e.x, y:e.y});
+
     if (!this.rotate) {
-      this.resetHoverables();
-
-      var p3 = this.renderer.inverseTransform({x:e.x, y:e.y});
-
-      var closestPointInfo = GeometryUtils.findClosestThingToPoint(
-        Object.keys(this.positions).map(id => this.positions[id]),
-        p3, 
-        GeometryUtils.euclid
-      );
-
-      var closestSegmentInfo = GeometryUtils.findClosestThingToPoint(
-        LinkageUtils.makeSegmentsFromLinkage(this.linkageData, this.positions),
-        p3, 
-        GeometryUtils.calcMinDistFromSegmentToPoint
-      );
-
-      if (closestPointInfo.thing) {
-        this.closestPoint = closestPointInfo.thing;
+      if (this.mouseIsDown && this.hoveredPoint) {
+        this._tryDraggingGroundPoint(currentPoint, this.hoveredPoint.id);
       } else {
-        this.closestSegment = closestSegmentInfo.thing;
+        this._handleHover(currentPoint);
       }
     }
   }
 
+  _handleHover(currentPoint) {
+    var {
+      closestPointInfo: hoveredPointInfo, 
+      closestSegmentInfo: hoveredSegmentInfo,
+    } = LinkageUtils.getClosestThings(
+      this.linkageData,
+      this.positions, 
+      currentPoint
+    );
+
+    if (hoveredPointInfo.thing) {
+      this.hoveredPoint = hoveredPointInfo.thing;
+      this.hoveredSegment = null;
+    } else if (hoveredSegmentInfo.thing) {
+      this.hoveredPoint = null;
+      this.hoveredSegment = hoveredSegmentInfo.thing;
+    } else {
+      this.hoveredPoint = null;
+      this.hoveredSegment = null;
+    }
+  }
+
+  _tryDraggingGroundPoint(currentPoint, hoveredPointID) {
+    var groundPoint = this.linkageData.groundPoints[this.hoveredPoint.id];
+
+    try {
+      var {x:prevX, y:prevY} = groundPoint;
+      groundPoint.x = currentPoint.x;
+      groundPoint.y = currentPoint.y;
+      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+    } catch (e) {
+      groundPoint.x = prevX;
+      groundPoint.y = prevY;
+      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+    } 
+  }
+
   animate() {
     if (this.rotate) {
-      this.linkageData.extenders.p2.angle += this.inc;
+      this._tryRotatingLinkageInput();
     }
-
-    this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+    
     this.renderer.drawLinkage({
       points: this.linkageData.points, 
       positions: this.positions,
     });
-    
+
     if (!this.rotate) {
-      if (this.closestSegment) {
-        this.renderer.drawLine(
-          this.closestSegment[0], 
-          this.closestSegment[1], 
-          'red'
-        );
-      } else if (this.closestPoint) {
-        this.renderer.drawPoint(this.closestPoint, 'red');
-      }
+      this._drawHoverables(this.hoveredPoint, this.hoveredSegment);
     }
 
     window.requestAnimationFrame(this.animate.bind(this));
+  }
+
+  _tryRotatingLinkageInput() {
+    try {
+      this.linkageData.extenders.p2.angle += this.speedInc;
+      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+    } catch (e) {
+      this.linkageData.extenders.p2.angle -= this.speedInc;
+      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+      this.speedInc *= -1;
+    }
+  }
+
+  _drawHoverables(hoveredPoint, hoveredSegment) {
+    if (hoveredSegment) {
+      this.renderer.drawLine(
+        this.positions[hoveredSegment[0].id], 
+        this.positions[hoveredSegment[1].id], 
+        'red'
+      );
+    } else if (hoveredPoint) {
+      this.renderer.drawPoint(hoveredPoint, 'red');
+    }
   }
 }
 
