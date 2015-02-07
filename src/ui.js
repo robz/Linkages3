@@ -77,14 +77,11 @@ class UI {
           );
         }
         break;
-      default: 
-        console.log(e.which);
-        break;
     }
   }
   
   _onMouseMove(e) {
-    var currentPoint = this.renderer.inverseTransform({x:e.x, y:e.y});
+    var currentPoint = this.renderer.inverseTransform(e);
 
     if (!this.rotate) {
       if (this.mouseIsDown && this.hoveredPoint) {
@@ -128,7 +125,6 @@ class UI {
 
     var ext0 = this.linkageData.extenders[p0id];
     var ext1 = this.linkageData.extenders[p1id];
-    console.log(ext0, ext1);
 
     if (ext0 && ext0.base === p1id) {
       ext0.len = len;
@@ -147,15 +143,13 @@ class UI {
       currentPoint
     );
 
+    this.hoveredPoint = null;
+    this.hoveredSegment = null;
+
     if (hoveredPointInfo.thing) {
       this.hoveredPoint = hoveredPointInfo.thing;
-      this.hoveredSegment = null;
     } else if (hoveredSegmentInfo.thing) {
-      this.hoveredPoint = null;
       this.hoveredSegment = hoveredSegmentInfo.thing;
-    } else {
-      this.hoveredPoint = null;
-      this.hoveredSegment = null;
     }
   }
 
@@ -167,7 +161,7 @@ class UI {
     }
 
     try {
-      var {x:prevX, y:prevY} = groundPoint;
+      var {x: prevX, y: prevY} = groundPoint;
       groundPoint.x = currentPoint.x;
       groundPoint.y = currentPoint.y;
       this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
@@ -183,9 +177,10 @@ class UI {
       this.linkageData.extenders.p2.angle += this.speedInc;
       this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
     } catch (e) {
-      this.linkageData.extenders.p2.angle -= this.speedInc;
-      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+      // reverse direction if the configuration is invalid
       this.speedInc *= -1;
+      this.linkageData.extenders.p2.angle += this.speedInc;
+      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
     }
   }
 
