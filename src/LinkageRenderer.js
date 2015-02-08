@@ -89,7 +89,9 @@ class CanvasRenderer {
     this.ctx.fillRect(-this._width/2, -this._height/2, this._width, this._height);
     this.ctx.restore();
   }
+}
 
+class LinkageRenderer extends CanvasRenderer {
   drawLinkage ({points, positions}: Object) {
     this.drawBackground();
 
@@ -107,4 +109,4 @@ class CanvasRenderer {
   }
 }
 
-module.exports = CanvasRenderer;
+module.exports = LinkageRenderer;

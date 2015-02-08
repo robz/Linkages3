@@ -1,7 +1,7 @@
 
 'use strict';
 
-var CanvasRenderer = require('./CanvasRenderer');
+var LinkageRenderer = require('./LinkageRenderer');
 var LinkageUtils = require('./LinkageUtils');
 var GeometryUtils = require('./GeometryUtils.js');
 
@@ -18,7 +18,7 @@ var BAR_INC = 1;
 
 class UI {
   constructor(canvasID, linkageData) {
-    this.renderer = new CanvasRenderer(canvasID);
+    this.renderer = new LinkageRenderer(canvasID);
     this.linkageData = linkageData;
 
     this.positions = null;

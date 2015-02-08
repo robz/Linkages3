@@ -1,8 +1,8 @@
 
 'use strict';
 
-var UI = require('./ui');
+var LinkageUI = require('./LinkageUI');
 var linkageData = require('./linkageData.js');
 
-var ui = new UI('mycanvas', linkageData);
+var ui = new LinkageUI('mycanvas', linkageData);
 ui.animate();
