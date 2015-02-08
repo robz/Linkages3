@@ -4,7 +4,19 @@
 
 var GeometryUtils = require('./GeometryUtils.js');
 
-function getClosestThings(linkageData, positions, currentPoint) {
+type Point = {x: number; y: number};
+
+type LinkageDataType = {
+  groundPoints: Object;
+  points: Object;
+  extenders: Object;
+}
+
+function getClosestThings(
+  linkageData: LinkageDataType, 
+  positions: Object, 
+  currentPoint: Point
+): Object {
   var points = Object.keys(positions).map(id => {
     var res = positions[id];
     res.id = id;
@@ -18,7 +30,7 @@ function getClosestThings(linkageData, positions, currentPoint) {
   );
 
   var closestSegmentInfo = GeometryUtils.findClosestThingToPoint(
-    makeSegmentsFromLinkage(linkageData, positions),
+    makeSegmentsFromLinkage(linkageData.points, positions),
     currentPoint,
     GeometryUtils.calcMinDistFromSegmentToPoint
   );
@@ -26,7 +38,10 @@ function getClosestThings(linkageData, positions, currentPoint) {
   return {closestPointInfo, closestSegmentInfo};
 }
 
-function makeSegmentsFromLinkage({points}, positions) {
+function makeSegmentsFromLinkage(
+  points: Object, 
+  positions: Object
+): Array<Array<Point>> {
   var segments = [];
 
   Object.keys(points).forEach((pointID) => {

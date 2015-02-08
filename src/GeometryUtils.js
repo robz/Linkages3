@@ -11,10 +11,11 @@ function euclid(p1: Point, p2: Point): number {
 }
 
 function calcMinDistFromSegmentToPoint(
-  [p1, p2]: Array<Point>, 
+  segment: Object, 
   p3: Point
 ): number {
   var point = null;
+  var [p1, p2] = segment;
 
   var theta = Math.atan2(p2.y - p1.y, p2.x - p1.x);
   var t = Math.sin(theta) * (p3.y - p1.y) + Math.cos(theta) * (p3.x - p1.x);
@@ -34,12 +35,12 @@ function calcMinDistFromSegmentToPoint(
 }
 
 function findClosestThingToPoint(
-  things: Array<Object>, 
+  things: Array<any>, 
   point: Point, 
-  distanceBetween: Function, 
-  startingThing: ?Object, 
-  startingDistance: ?number
-): {thing: Object; dist: number} {
+  distanceBetween: (point: Point, thing: any) => number, 
+  startingThing?: any, 
+  startingDistance?: number
+): {thing: ?any; dist: number} {
   return things.reduce((best, thing) => {
     var dist = distanceBetween(thing, point);
     if (dist < best.dist) {

@@ -1,4 +1,3 @@
-/* @flow */
 
 'use strict';
 
@@ -19,7 +18,7 @@ var BAR_INC = 1;
 
 class UI {
   constructor(canvasID, linkageData) {
-    this.renderer = CanvasRenderer.init(canvasID);
+    this.renderer = new CanvasRenderer(canvasID);
     this.linkageData = linkageData;
 
     this.positions = null;
@@ -189,10 +188,10 @@ class UI {
       this.renderer.drawLine(
         this.positions[hoveredSegment[0].id], 
         this.positions[hoveredSegment[1].id], 
-        'red'
+        {lineColor: 'red'}
       );
     } else if (hoveredPoint) {
-      this.renderer.drawPoint(hoveredPoint, 'red');
+      this.renderer.drawPoint(hoveredPoint, {pointColor: 'red'});
     }
   }
 }
