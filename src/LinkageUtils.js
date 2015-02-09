@@ -10,7 +10,7 @@ type LinkageDataType = {
   groundPoints: Object;
   points: Object;
   extenders: Object;
-}
+};
 
 function getClosestThings(
   linkageData: LinkageDataType, 

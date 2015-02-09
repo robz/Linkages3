@@ -1,9 +1,18 @@
+/* @flow */
 
 'use strict';
 
 var LinkageRenderer = require('./LinkageRenderer');
 var LinkageUtils = require('./LinkageUtils');
 var GeometryUtils = require('./GeometryUtils.js');
+
+type Point = {x: number; y: number};
+
+type LinkageDataType = {
+  groundPoints: Object;
+  points: Object; 
+  extenders: Object;
+};
 
 var KEYS = {
   A: 97,
@@ -17,21 +26,32 @@ var SPEED_INC = 0.04;
 var BAR_INC = 1;
 
 class UI {
-  constructor(canvasID, linkageData) {
+  renderer: LinkageRenderer;
+  linkageData: LinkageDataType;
+
+  positions: { [key:string]: Point };
+  rotate: boolean;
+  speedInc: number;
+  mouseIsDown: boolean;
+  hoveredSegment: ?Array<{id: string}>;
+  hoveredPoint: ?{id: string};
+
+  constructor(canvasID: string, linkageData: LinkageDataType) {
     this.renderer = new LinkageRenderer(canvasID);
     this.linkageData = linkageData;
 
-    this.positions = null;
+    this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
     this.rotate = true;
     this.speedInc = SPEED_INC;
     this.mouseIsDown = false;
     this.hoveredSegment = null;
     this.hoveredPoint = null;
 
-    document.onkeypress = this._onKeyPress.bind(this);
-    document.onmousemove = this._onMouseMove.bind(this);
-    document.onmousedown = (e) => { this.mouseIsDown = true; };
-    document.onmouseup = (e) => { this.mouseIsDown = false; };
+    var doc: any = document;
+    doc.onkeypress = this._onKeyPress.bind(this);
+    doc.onmousemove = this._onMouseMove.bind(this);
+    doc.onmousedown = (e) => { this.mouseIsDown = true; };
+    doc.onmouseup = (e) => { this.mouseIsDown = false; };
   }
 
   animate() {
@@ -51,8 +71,8 @@ class UI {
     window.requestAnimationFrame(this.animate.bind(this));
   }
 
-  _onKeyPress(e) {
-    switch (e.which) {
+  _onKeyPress({which}: {which:number}) {
+    switch (which) {
       case KEYS.SPACE:
         this._toggleRotation();
         break;
@@ -79,7 +99,7 @@ class UI {
     }
   }
   
-  _onMouseMove(e) {
+  _onMouseMove(e: Point) {
     var currentPoint = this.renderer.inverseTransform(e);
 
     if (!this.rotate) {
@@ -99,11 +119,11 @@ class UI {
     }
   }
 
-  _changeSpeed(factor) {
+  _changeSpeed(factor: number) {
     this.speedInc *= factor;
   }
 
-  _tryChangingBarLength(lenChange, hoveredSegment) {
+  _tryChangingBarLength(lenChange: number, hoveredSegment: Array<{id: string}>) {
     var p0id = hoveredSegment[0].id;
     var p1id = hoveredSegment[1].id;
     var oldLen = this.linkageData.points[p0id][p1id].len;
@@ -118,7 +138,7 @@ class UI {
     } 
   }
 
-  _changeBarLength(len, p0id, p1id) {
+  _changeBarLength(len: number, p0id: string, p1id: string) {
     this.linkageData.points[p0id][p1id].len = len;
     this.linkageData.points[p1id][p0id].len = len;
 
@@ -152,8 +172,8 @@ class UI {
     }
   }
 
-  _tryDraggingGroundPoint(currentPoint, hoveredPointID) {
-    var groundPoint = this.linkageData.groundPoints[this.hoveredPoint.id];
+  _tryDraggingGroundPoint(currentPoint: Point, hoveredPointID: string) {
+    var groundPoint = this.linkageData.groundPoints[hoveredPointID];
 
     if (!groundPoint) {
       return;
@@ -183,7 +203,10 @@ class UI {
     }
   }
 
-  _drawHoverables(hoveredPoint, hoveredSegment) {
+  _drawHoverables(
+    hoveredPoint: ?{id:string},
+    hoveredSegment: ?Array<{id:string}>
+  ) {
     if (hoveredSegment) {
       this.renderer.drawLine(
         this.positions[hoveredSegment[0].id], 
@@ -191,7 +214,10 @@ class UI {
         {lineColor: 'red'}
       );
     } else if (hoveredPoint) {
-      this.renderer.drawPoint(hoveredPoint, {pointColor: 'red'});
+      this.renderer.drawPoint(
+        this.positions[hoveredPoint.id], 
+        {pointColor: 'red'}
+      );
     }
   }
 }

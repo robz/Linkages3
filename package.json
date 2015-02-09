@@ -14,7 +14,6 @@
   "devDependencies": {
     "6to5ify": "4.1.0",
     "browserify": "^6.2.0",
-    "flow": "0.2.3",
     "jest-cli": "^0.2.1",
     "uglify-js": "2.4.16",
     "watchify": "2.2.1"

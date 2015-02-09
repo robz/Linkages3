@@ -3,10 +3,10 @@
 'use strict';
 
 type OptionsType = {
-  pointColor: string;
-  lineColor: string;
-  pointRadius: number;
-  lineWidth: number;
+  pointColor: ?string;
+  lineColor: ?string;
+  pointRadius: ?number;
+  lineWidth: ?number;
 };
 
 type Point = {x: number; y: number};
