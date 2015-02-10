@@ -12,6 +12,35 @@ type LinkageDataType = {
   extenders: Object;
 };
 
+function addGroundSegment(
+  linkageData: LinkageDataType, 
+  positions: Object,
+  groundPoint: Point,
+  auxPoint: Point,
+  {id: connectedID}: {id: string}
+) {
+  var numPoints = Object.keys(linkageData.points).length;
+  var groundID = 'p' + numPoints;
+  var auxID = 'p' + (numPoints + 1);
+  
+  linkageData.groundPoints[groundID] = {
+    x: groundPoint.x,
+    y: groundPoint.y,
+  };
+
+  var distGroundToAux = GeometryUtils.euclid(groundPoint, auxPoint); 
+  var distAuxToConnected = GeometryUtils.euclid(auxPoint, positions[connectedID]);
+
+  linkageData.points[groundID] = {};
+  linkageData.points[groundID][auxID] = {len: distGroundToAux};
+
+  linkageData.points[auxID] = {};
+  linkageData.points[auxID][groundID] = {len: distGroundToAux};
+  linkageData.points[auxID][connectedID] = {len: distAuxToConnected};
+
+  linkageData.points[connectedID][auxID] = {len: distAuxToConnected};
+}
+
 function getClosestThings(
   linkageData: LinkageDataType, 
   positions: Object, 
@@ -107,4 +136,5 @@ module.exports = {
   makeSegmentsFromLinkage, 
   calcLinkagePositions, 
   getClosestThings,
+  addGroundSegment,
 };

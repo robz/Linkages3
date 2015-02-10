@@ -35,6 +35,8 @@ class UI {
   mouseIsDown: boolean;
   hoveredSegment: ?Array<{id: string}>;
   hoveredPoint: ?{id: string};
+  potentialGroundPoint: Point;
+  potentialSecondPoint: Point;
 
   constructor(canvasID: string, linkageData: LinkageDataType) {
     this.renderer = new LinkageRenderer(canvasID);
@@ -46,12 +48,49 @@ class UI {
     this.mouseIsDown = false;
     this.hoveredSegment = null;
     this.hoveredPoint = null;
+    this.potentialGroundPoint = null;
+    this.potentialSecondPoint = null;
+    this.groundSegmentState = 0;
 
     var doc: any = document;
     doc.onkeypress = this._onKeyPress.bind(this);
     doc.onmousemove = this._onMouseMove.bind(this);
     doc.onmousedown = (e) => { this.mouseIsDown = true; };
-    doc.onmouseup = (e) => { this.mouseIsDown = false; };
+    doc.onmouseup = this._onMouseUp.bind(this); 
+  }
+
+  _onMouseUp(e) {
+    this.mouseIsDown = false;
+  
+    if (!this.rotate) {
+      switch(this.groundSegmentState) {
+        case 0:
+          if (!this.hoveredPoint) {
+            this.potentialGroundPoint = this.renderer.inverseTransform(e);
+            this.groundSegmentState = 1;
+          }
+          break;
+        case 1:
+          if (!this.hoveredPoint) {
+            this.potentialSecondPoint = this.renderer.inverseTransform(e);
+            this.groundSegmentState = 2;
+          }
+          break;
+        case 2:
+          if (this.hoveredPoint) {
+            LinkageUtils.addGroundSegment(
+              this.linkageData,
+              this.positions,
+              this.potentialGroundPoint,
+              this.potentialSecondPoint,
+              this.hoveredPoint
+            );
+            this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+            this.groundSegmentState = 0;
+          }
+          break;
+      }
+    }
   }
 
   animate() {
@@ -104,7 +143,10 @@ class UI {
 
     if (!this.rotate) {
       if (this.mouseIsDown && this.hoveredPoint) {
-        this._tryDraggingGroundPoint(currentPoint, this.hoveredPoint.id);
+        var couldDrag = this._tryDraggingGroundPoint(currentPoint, this.hoveredPoint.id);
+        if (couldDrag) {
+          this.groundSegmentState = 0;
+        }
       } else {
         this._handleHover(currentPoint);
       }
@@ -116,6 +158,7 @@ class UI {
     if (this.rotate) {
       this.hoveredPoint = null;
       this.hoveredSegment = null;
+      this.groundSegmentState = 0;
     }
   }
 
