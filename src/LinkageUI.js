@@ -37,6 +37,7 @@ class UI {
   hoveredPoint: ?{id: string};
   potentialGroundPoint: Point;
   potentialSecondPoint: Point;
+  groundSegmentState: number;
 
   constructor(canvasID: string, linkageData: LinkageDataType) {
     this.renderer = new LinkageRenderer(canvasID);
@@ -105,6 +106,12 @@ class UI {
 
     if (!this.rotate) {
       this._drawHoverables(this.hoveredPoint, this.hoveredSegment);
+      if (this.groundSegmentState) {
+        this._drawPotentials(
+          this.potentialGroundPoint, 
+          this.potentialSecondPoint
+        );
+      }
     }
 
     window.requestAnimationFrame(this.animate.bind(this));
@@ -261,6 +268,20 @@ class UI {
         this.positions[hoveredPoint.id], 
         {pointColor: 'red'}
       );
+    }
+  }
+  
+  _drawPotentials(
+    ground?: Point,
+    second?: Point
+  ) {
+    switch (this.groundSegmentState) {
+      case 2:
+        this.renderer.drawLine(ground, second);
+        this.renderer.drawPoint(second);
+      case 1:
+        this.renderer.drawPoint(ground);
+        break;
     }
   }
 }
