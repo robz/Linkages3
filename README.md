@@ -10,7 +10,7 @@ $ npm run-script build
 
 Then open `index.html` with a browser (I've only tested in the lastest versions of Chrome). You should see something like this linkage: 
 
-![Image of basic linkage](http://bit.ly/1uppWqY)
+![Image of basic linkage](http://i1077.photobucket.com/albums/w463/rjnevels/base%20linkage_zps2dxq1bmx.png)
 
 Here are the controls so far:
 * Press `space` to pause
