@@ -25,7 +25,7 @@ var KEYS = {
 var SPEED_INC = 0.04;
 var BAR_INC = 1;
 
-class UI {
+class LinkageUI {
   renderer: LinkageRenderer;
   linkageData: LinkageDataType;
 
@@ -37,7 +37,8 @@ class UI {
   hoveredPoint: ?{id: string};
   potentialGroundPoint: Point;
   potentialSecondPoint: Point;
-  groundSegmentState: number;
+  newSegmentState: number;
+  
 
   constructor(canvasID: string, linkageData: LinkageDataType) {
     this.renderer = new LinkageRenderer(canvasID);
@@ -51,7 +52,7 @@ class UI {
     this.hoveredPoint = null;
     this.potentialGroundPoint = null;
     this.potentialSecondPoint = null;
-    this.groundSegmentState = 0;
+    this.newSegmentState = 0;
 
     var doc: any = document;
     doc.onkeypress = this._onKeyPress.bind(this);
@@ -64,17 +65,20 @@ class UI {
     this.mouseIsDown = false;
   
     if (!this.rotate) {
-      switch(this.groundSegmentState) {
+      switch(this.newSegmentState) {
         case 0:
           if (!this.hoveredPoint) {
             this.potentialGroundPoint = this.renderer.inverseTransform(e);
-            this.groundSegmentState = 1;
+            this.newSegmentState = 1;
+          } else {
+            this.potentialPoint1Id = this.hoveredPoint.id;
+            this.newSegmentState = 3;
           }
           break;
         case 1:
           if (!this.hoveredPoint) {
             this.potentialSecondPoint = this.renderer.inverseTransform(e);
-            this.groundSegmentState = 2;
+            this.newSegmentState = 2;
           }
           break;
         case 2:
@@ -87,7 +91,27 @@ class UI {
               this.hoveredPoint
             );
             this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
-            this.groundSegmentState = 0;
+            this.newSegmentState = 0;
+          }
+          break;
+        case 3:
+          if (this.hoveredPoint) {
+            this.potentialPoint2Id = this.hoveredPoint.id;
+            this.newSegmentState = 4;
+          }
+          break;
+        case 4: 
+          if (!this.hoveredPoint) {
+            var potentialPoint3 = this.renderer.inverseTransform(e);
+            LinkageUtils.addTriangle(
+              this.linkageData,
+              this.positions,
+              this.potentialPoint1Id,
+              this.potentialPoint2Id,
+              potentialPoint3
+            );
+            this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+            this.newSegmentState = 0;
           }
           break;
       }
@@ -106,10 +130,12 @@ class UI {
 
     if (!this.rotate) {
       this._drawHoverables(this.hoveredPoint, this.hoveredSegment);
-      if (this.groundSegmentState) {
+      if (this.newSegmentState) {
         this._drawPotentials(
           this.potentialGroundPoint, 
-          this.potentialSecondPoint
+          this.potentialSecondPoint,
+          this.potentialPoint1Id,
+          this.potentialPoint2Id
         );
       }
     }
@@ -152,7 +178,7 @@ class UI {
       if (this.mouseIsDown && this.hoveredPoint) {
         var couldDrag = this._tryDraggingGroundPoint(currentPoint, this.hoveredPoint.id);
         if (couldDrag) {
-          this.groundSegmentState = 0;
+          this.newSegmentState = 0;
         }
       } else {
         this._handleHover(currentPoint);
@@ -165,7 +191,7 @@ class UI {
     if (this.rotate) {
       this.hoveredPoint = null;
       this.hoveredSegment = null;
-      this.groundSegmentState = 0;
+      this.newSegmentState = 0;
     }
   }
 
@@ -273,17 +299,24 @@ class UI {
   
   _drawPotentials(
     ground?: Point,
-    second?: Point
+    second?: Point,
+    point1Id?: string,
+    point2Id?: string
   ) {
-    switch (this.groundSegmentState) {
+    switch (this.newSegmentState) {
       case 2:
         this.renderer.drawLine(ground, second);
         this.renderer.drawPoint(second);
       case 1:
         this.renderer.drawPoint(ground);
         break;
+      case 4:
+        this.renderer.drawPoint(this.positions[point2Id], {pointColor:'red'});
+      case 3:
+        this.renderer.drawPoint(this.positions[point1Id], {pointColor:'red'});
+        break;
     }
   }
 }
 
-module.exports = UI;
+module.exports = LinkageUI;

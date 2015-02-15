@@ -12,6 +12,26 @@ type LinkageDataType = {
   extenders: Object;
 };
 
+function addTriangle(
+  linkageData: LinkageDataType, 
+  positions: Object,
+  point1Id: string,
+  point2Id: string,
+  point3: Point
+) {
+  var numPoints = Object.keys(linkageData.points).length;
+  var point3Id = 'p' + numPoints;
+  var dist1To3 = GeometryUtils.euclid(point3, positions[point1Id]);
+  var dist2To3 = GeometryUtils.euclid(point3, positions[point2Id]);
+
+  linkageData.points[point3Id] = {};
+  linkageData.points[point3Id][point1Id] = {len: dist1To3};
+  linkageData.points[point3Id][point2Id] = {len: dist2To3};
+
+  linkageData.points[point1Id][point3Id] = {len: dist1To3};
+  linkageData.points[point2Id][point3Id] = {len: dist2To3};
+}
+
 function addGroundSegment(
   linkageData: LinkageDataType, 
   positions: Object,
@@ -137,4 +157,5 @@ module.exports = {
   calcLinkagePositions, 
   getClosestThings,
   addGroundSegment,
+  addTriangle,
 };
