@@ -19,17 +19,42 @@ function addTriangle(
   point2Id: string,
   point3: Point
 ) {
+  var position1 = positions[point1Id];
+  var position2 = positions[point2Id];
   var numPoints = Object.keys(linkageData.points).length;
   var point3Id = 'p' + numPoints;
   var dist1To3 = GeometryUtils.euclid(point3, positions[point1Id]);
   var dist2To3 = GeometryUtils.euclid(point3, positions[point2Id]);
 
   linkageData.points[point3Id] = {};
-  linkageData.points[point3Id][point1Id] = {len: dist1To3};
-  linkageData.points[point3Id][point2Id] = {len: dist2To3};
 
-  linkageData.points[point1Id][point3Id] = {len: dist1To3};
-  linkageData.points[point2Id][point3Id] = {len: dist2To3};
+  var doPoint1 = () => {
+    linkageData.points[point3Id][point1Id] = {len: dist1To3};
+    linkageData.points[point1Id][point3Id] = {len: dist1To3};
+  };
+
+  var doPoint2 = () => {
+    linkageData.points[point3Id][point2Id] = {len: dist2To3};
+    linkageData.points[point2Id][point3Id] = {len: dist2To3};
+  };
+
+  var res = GeometryUtils.calcPointFromTriangle(
+    position1, 
+    position2, 
+    dist1To3,
+    dist2To3
+  );
+
+  if (
+    GeometryUtils.euclid(res.sol1, point3) < 
+    GeometryUtils.euclid(res.sol2, point3)
+  ) {
+    doPoint1();
+    doPoint2();
+  } else {
+    doPoint2();
+    doPoint1();
+  }
 }
 
 function addGroundSegment(
@@ -141,7 +166,7 @@ function calcLinkagePositions(
             positions[knownAdjacents[1]],
             points[id][knownAdjacents[0]].len,
             points[id][knownAdjacents[1]].len
-          );
+          ).sol1;
         }
       }
 

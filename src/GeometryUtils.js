@@ -56,7 +56,7 @@ function calcPointFromTriangle(
   p2: Point, 
   a1: number, 
   a2: number
-): Point {
+): {sol1: Point; sol2: Point} {
   var a3 = euclid(p1, p2);
   if (a3 > a1 + a2) {
     throw new Error('lengths of bars less that distance between joints');
@@ -75,8 +75,14 @@ function calcPointFromTriangle(
   var theta1 = Math.atan2(dy, dx);
 
   return {
-    x: p1.x + a1 * Math.cos(alpha1 + theta1), 
-    y: p1.y + a1 * Math.sin(alpha1 + theta1),
+    sol1: {
+      x: p1.x + a1 * Math.cos(alpha1 + theta1), 
+      y: p1.y + a1 * Math.sin(alpha1 + theta1),
+    },
+    sol2: {
+      x: p1.x + a1 * Math.cos(-alpha1 + theta1), 
+      y: p1.y + a1 * Math.sin(-alpha1 + theta1),
+    },
   };
 }
 
