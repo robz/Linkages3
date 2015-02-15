@@ -38,6 +38,8 @@ function addTriangle(
     linkageData.points[point2Id][point3Id] = {len: dist2To3};
   };
 
+  // there are two possible solutions to a triangle--so figure out which
+  // is desired based on the closest calculated third point
   var res = GeometryUtils.calcPointFromTriangle(
     position1, 
     position2, 
@@ -73,15 +75,32 @@ function addGroundSegment(
     y: groundPoint.y,
   };
 
+  var connectedPoint = positions[connectedID];
   var distGroundToAux = GeometryUtils.euclid(groundPoint, auxPoint); 
-  var distAuxToConnected = GeometryUtils.euclid(auxPoint, positions[connectedID]);
+  var distAuxToConnected = GeometryUtils.euclid(auxPoint, connectedPoint);
 
   linkageData.points[groundID] = {};
   linkageData.points[groundID][auxID] = {len: distGroundToAux};
 
   linkageData.points[auxID] = {};
-  linkageData.points[auxID][groundID] = {len: distGroundToAux};
-  linkageData.points[auxID][connectedID] = {len: distAuxToConnected};
+
+  var res = GeometryUtils.calcPointFromTriangle(
+    groundPoint,
+    connectedPoint, 
+    distGroundToAux,
+    distAuxToConnected
+  );
+
+  if (
+    GeometryUtils.euclid(res.sol1, auxPoint) <
+    GeometryUtils.euclid(res.sol2, auxPoint)
+  ) {
+    linkageData.points[auxID][groundID] = {len: distGroundToAux};
+    linkageData.points[auxID][connectedID] = {len: distAuxToConnected};
+  } else {
+    linkageData.points[auxID][connectedID] = {len: distAuxToConnected};
+    linkageData.points[auxID][groundID] = {len: distGroundToAux};
+  }
 
   linkageData.points[connectedID][auxID] = {len: distAuxToConnected};
 }
