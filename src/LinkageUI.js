@@ -38,7 +38,6 @@ class LinkageUI {
   potentialGroundPoint: Point;
   potentialSecondPoint: Point;
   newSegmentState: number;
-  
 
   constructor(canvasID: string, linkageData: LinkageDataType) {
     this.renderer = new LinkageRenderer(canvasID);
@@ -67,12 +66,16 @@ class LinkageUI {
     if (!this.rotate) {
       switch(this.newSegmentState) {
         case 0:
-          if (!this.hoveredPoint) {
+          if (!this.hoveredPoint && !this.hoveredSegment) {
             this.potentialGroundPoint = this.renderer.inverseTransform(e);
             this.newSegmentState = 1;
-          } else {
+          } else if (!this.hoveredSegment) {
             this.potentialPoint1Id = this.hoveredPoint.id;
             this.newSegmentState = 3;
+          } else {
+            this.potentialPoint1Id = this.hoveredSegment[0].id;
+            this.potentialPoint2Id = this.hoveredSegment[1].id;
+            this.newSegmentState = 4;
           }
           break;
         case 1:
