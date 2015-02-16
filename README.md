@@ -8,7 +8,7 @@ $ sudo npm install
 $ npm run-script build
 ```
 
-Then open `index.html` with a browser (I've only tested in the lastest versions of Chrome). You should see something like this linkage: 
+Then open `index.html` with a browser (I've only tested in the lastest versions of Chrome). You should see a simple four-bar linkage with one rotary input, looking something like this: 
 
 ![Image of basic linkage](http://i1077.photobucket.com/albums/w463/rjnevels/Screen%20Shot%202015-02-16%20at%201.25.01%20PM_zpsesx9hhaj.png)
 
