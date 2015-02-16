@@ -9,14 +9,6 @@ module.exports = {
     },
     p2: {
       p1: { len: 5 },
-      p3: { len: 10 },
-    },
-    p3: {
-      p2: { len: 10 },
-      p4: { len: 15 }, 
-    },
-    p4: {
-      p3: { len: 15 },
     },
   },
   extenders: {
@@ -30,6 +22,5 @@ module.exports = {
   groundPoints: {
     p0: { x: 1, y: 0 },
     p1: { x: 0, y: 0 }, 
-    p4: { x: 13, y: -11 },
   },
 };
