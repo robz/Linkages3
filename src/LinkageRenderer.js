@@ -14,7 +14,7 @@ type Point = {x: number; y: number};
 var SCALE = 10;
 var POINT_COLOR = 'black';
 var LINE_COLOR = 'darkGray';
-var BACKGROUND_COLOR = 'lightGray';
+var BACKGROUND_COLOR = 'white';
 var POINT_RADIUS = 4;
 var LINE_WIDTH = 4;
 
@@ -88,6 +88,17 @@ class CanvasRenderer {
     this.ctx.fillStyle = BACKGROUND_COLOR;
     this.ctx.fillRect(-this._width/2, -this._height/2, this._width, this._height);
     this.ctx.restore();
+  }
+
+  drawSegment(p1: Point, p2: Point, options?: OptionsType) {
+    this.drawLine(p1, p2, options);
+    this.drawPoint(p1, options);
+    this.drawPoint(p2, options);
+  }
+
+  drawDirectedSegment(p1: Point, p2: Point, options?: OptionsType) {
+    this.drawLine(p1, p2, options);
+    this.drawPoint(p1, options);
   }
 }
 

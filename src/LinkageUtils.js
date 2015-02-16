@@ -64,7 +64,7 @@ function addGroundSegment(
   positions: Object,
   groundPoint: Point,
   auxPoint: Point,
-  {id: connectedID}: {id: string}
+  connectedID: string
 ) {
   var numPoints = Object.keys(linkageData.points).length;
   var groundID = 'p' + numPoints;
