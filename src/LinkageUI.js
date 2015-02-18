@@ -2,9 +2,9 @@
 
 'use strict';
 
-var LinkageRenderer = require('./LinkageRenderer');
-var LinkageUtils = require('./LinkageUtils');
 var GeometryUtils = require('./GeometryUtils.js');
+var LinkageRenderer = require('./LinkageRenderer');
+var Linkage = require('./Linkage');
 var UIState = require('./UIState.js');
 
 var EDIT_STATES = UIState.EDIT_STATES;
@@ -12,7 +12,6 @@ var EDIT_STATE_TRANSITIONS = UIState.EDIT_STATE_TRANSITIONS;
 var EDIT_INPUT = UIState.EDIT_INPUT;
 
 type Point = {x: number; y: number};
-
 type LinkageDataType = {
   groundPoints: Object;
   points: Object; 
@@ -27,48 +26,48 @@ var KEYS = {
   T: 116,
   W: 119,
 };
-
-var SPEED_INC = 0.04;
 var BAR_INC = 1;
-
-var SELECTED_COLOR = 'red';
-var GHOST_COLOR = 'lightGray';
+var SPEED_INC = 0.04;
+var GHOST_LINE_COLOR = 'pink';
+var GHOST_POINT_COLOR = 'red';
+var HOVER_LINE_COLOR = 'lightBlue';
+var HOVER_POINT_COLOR = 'blue';
 
 class LinkageUI {
   renderer: LinkageRenderer;
-  linkageData: LinkageDataType;
 
-  positions: { [key:string]: Point };
   rotate: boolean;
   speedInc: number;
   mouseIsDown: boolean;
+  mousePoint: Point;
   hoveredSegment: ?Array<{id: string}>;
   hoveredPoint: ?{id: string};
-  mousePoint: Point;
 
   editingState: number;
+  editingStateData: {
+    grounds: Array<Point>;
+    points: Array<string>; 
+  };
   selectedPointID: string;
   selectedSegment: {
     point0ID: string; 
     point1ID: string; 
   }; 
-  editingStateData: {
-    grounds: Array<Point>;
-    points: Array<string>; 
-  };
 
   constructor(canvasID: string, linkageData: LinkageDataType) {
     this.renderer = new LinkageRenderer(canvasID);
-    this.linkageData = linkageData;
+    this.linkage = new Linkage(linkageData);
 
-    this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
     this.rotate = true;
     this.speedInc = SPEED_INC;
     this.mouseIsDown = false;
+    this.mousePoint = null;
     this.hoveredSegment = null;
     this.hoveredPoint = null;
     this.editingState = EDIT_STATES.INITIAL;
     this.editingStateData = {grounds: [], points: []};
+    this.selectedPointID = null;
+    this.selectedSegment = null;
 
     var doc: any = document;
     doc.onkeypress = this._onKeyPress.bind(this);
@@ -77,7 +76,25 @@ class LinkageUI {
     doc.onmouseup = e => this.mouseIsDown = false;
   }
 
-  _onMouseDown(e) {
+  animate() {
+    if (this.rotate) {
+      this._tryRotatingLinkageInput();
+    }
+    
+    this.renderer.drawLinkage({
+      points: this.linkage.spec.points, 
+      positions: this.linkage.positions,
+    });
+
+    if (!this.rotate) {
+      this._drawHoverables();
+      this._drawEditState();
+    }
+
+    window.requestAnimationFrame(this.animate.bind(this));
+  }
+
+  _onMouseDown(e: Point) {
     this.mouseIsDown = true;
 
     if (this.rotate) {
@@ -102,36 +119,30 @@ class LinkageUI {
 
     switch(this.editingState) {
       case EDIT_STATES.GROUND_TRIANGLE_1:
-        LinkageUtils.addGroundSegment(
-          this.linkageData,
-          this.positions,
+        this.linkage.addGroundSegment(
           this.editingStateData.grounds[0],
           this.editingStateData.grounds[1],
           this.editingStateData.points[0]
         );
-        this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+        this.linkage.calculatePositions();
         this.editingState = EDIT_STATES.INITIAL;
         break;
       case EDIT_STATES.GROUND_TRIANGLE_2:
-        LinkageUtils.addGroundSegment(
-          this.linkageData,
-          this.positions,
+        this.linkage.addGroundSegment(
           this.editingStateData.grounds[1],
           this.editingStateData.grounds[0],
           this.editingStateData.points[0]
         );
-        this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+        this.linkage.calculatePositions();
         this.editingState = EDIT_STATES.INITIAL;
         break;
       case EDIT_STATES.DYNAMIC_TRIANGLE:
-        LinkageUtils.addTriangle(
-          this.linkageData,
-          this.positions,
+        this.linkage.addTriangle(
           this.editingStateData.points[0],
           this.editingStateData.points[1],
           this.editingStateData.grounds[0] 
         );
-        this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+        this.linkage.calculatePositions();
         this.editingState = EDIT_STATES.INITIAL;
         break;
     }
@@ -140,24 +151,6 @@ class LinkageUI {
       this.editingStateData.points = [];
       this.editingStateData.grounds = [];
     }
-  }
-
-  animate() {
-    if (this.rotate) {
-      this._tryRotatingLinkageInput();
-    }
-    
-    this.renderer.drawLinkage({
-      points: this.linkageData.points, 
-      positions: this.positions,
-    });
-
-    if (!this.rotate) {
-      this._drawHoverables(this.hoveredPoint, this.hoveredSegment);
-      this._drawEditState();
-    }
-
-    window.requestAnimationFrame(this.animate.bind(this));
   }
 
   _onKeyPress({which}: {which:number}) {
@@ -202,9 +195,6 @@ class LinkageUI {
           this.mousePoint, 
           this.hoveredPoint.id
         );
-        if (couldDrag) {
-          this.editingState = 0;
-        }
       } else {
         this._handleHover(this.mousePoint);
       }
@@ -227,24 +217,24 @@ class LinkageUI {
   _tryChangingBarLength(lenChange: number, hoveredSegment: Array<{id: string}>) {
     var p0id = hoveredSegment[0].id;
     var p1id = hoveredSegment[1].id;
-    var oldLen = this.linkageData.points[p0id][p1id].len;
+    var oldLen = this.linkage.spec.points[p0id][p1id].len;
     var newLen = oldLen + lenChange;
 
     try {
       this._changeBarLength(newLen, p0id, p1id);
-      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+      this.linkage.calculatePositions();
     } catch (e) {
       this._changeBarLength(oldLen, p0id, p1id);
-      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+      this.linkage.calculatePositions();
     } 
   }
 
   _changeBarLength(len: number, p0id: string, p1id: string) {
-    this.linkageData.points[p0id][p1id].len = len;
-    this.linkageData.points[p1id][p0id].len = len;
+    this.linkage.spec.points[p0id][p1id].len = len;
+    this.linkage.spec.points[p1id][p0id].len = len;
 
-    var ext0 = this.linkageData.extenders[p0id];
-    var ext1 = this.linkageData.extenders[p1id];
+    var ext0 = this.linkage.spec.extenders[p0id];
+    var ext1 = this.linkage.spec.extenders[p1id];
 
     if (ext0 && ext0.base === p1id) {
       ext0.len = len;
@@ -257,11 +247,7 @@ class LinkageUI {
     var {
       closestPointInfo: hoveredPointInfo, 
       closestSegmentInfo: hoveredSegmentInfo,
-    } = LinkageUtils.getClosestThings(
-      this.linkageData,
-      this.positions, 
-      currentPoint
-    );
+    } = this.linkage.getClosestThings(currentPoint);
 
     this.hoveredPoint = null;
     this.hoveredSegment = null;
@@ -273,8 +259,11 @@ class LinkageUI {
     }
   }
 
-  _tryDraggingGroundPoint(currentPoint: Point, hoveredPointID: string) {
-    var groundPoint = this.linkageData.groundPoints[hoveredPointID];
+  _tryDraggingGroundPoint(
+    currentPoint: Point, 
+    hoveredPointID: string
+  ): boolean {
+    var groundPoint = this.linkage.spec.groundPoints[hoveredPointID];
 
     if (!groundPoint) {
       return;
@@ -284,41 +273,40 @@ class LinkageUI {
       var {x: prevX, y: prevY} = groundPoint;
       groundPoint.x = currentPoint.x;
       groundPoint.y = currentPoint.y;
-      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
-      this.editingState = EDIT_STATES.INITIAL;
+      this.linkage.calculatePositions();
+      return true;
     } catch (e) {
       groundPoint.x = prevX;
       groundPoint.y = prevY;
-      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+      this.linkage.calculatePositions();
     } 
+
+    return false;
   }
 
   _tryRotatingLinkageInput() {
     try {
-      this.linkageData.extenders.p2.angle += this.speedInc;
-      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+      this.linkage.spec.extenders.p2.angle += this.speedInc;
+      this.linkage.calculatePositions();
     } catch (e) {
       // reverse direction if the configuration is invalid
       this._changeSpeed(-1);
-      this.linkageData.extenders.p2.angle += this.speedInc;
-      this.positions = LinkageUtils.calcLinkagePositions(this.linkageData);
+      this.linkage.spec.extenders.p2.angle += this.speedInc;
+      this.linkage.calculatePositions();
     }
   }
 
-  _drawHoverables(
-    hoveredPoint: ?{id:string},
-    hoveredSegment: ?Array<{id:string}>
-  ) {
-    if (hoveredSegment) {
+  _drawHoverables() {
+    if (this.hoveredSegment) {
       this.renderer.drawLine(
-        this.positions[hoveredSegment[0].id], 
-        this.positions[hoveredSegment[1].id], 
-        {lineColor: 'blue'}
+        this.linkage.positions[this.hoveredSegment[0].id], 
+        this.linkage.positions[this.hoveredSegment[1].id], 
+        {lineColor: HOVER_LINE_COLOR}
       );
-    } else if (hoveredPoint) {
+    } else if (this.hoveredPoint) {
       this.renderer.drawPoint(
-        this.positions[hoveredPoint.id], 
-        {pointColor: 'blue'}
+        this.linkage.positions[this.hoveredPoint.id], 
+        {pointColor: HOVER_POINT_COLOR}
       );
     }
   }
@@ -329,50 +317,50 @@ class LinkageUI {
         this.renderer.drawSegment(
           this.editingStateData.grounds[0],
           this.mousePoint,
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         break;
       case EDIT_STATES.POINT:
         this.renderer.drawSegment(
-          this.positions[this.editingStateData.points[0]],
+          this.linkage.positions[this.editingStateData.points[0]],
           this.mousePoint,
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         break;
       case EDIT_STATES.SEGMENT:
         this.renderer.drawSegment(
-          this.positions[this.editingStateData.points[0]],
+          this.linkage.positions[this.editingStateData.points[0]],
           this.mousePoint,
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         this.renderer.drawSegment(
-          this.positions[this.editingStateData.points[1]],
+          this.linkage.positions[this.editingStateData.points[1]],
           this.mousePoint,
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         break;
       case EDIT_STATES.GROUND_GROUND:
         this.renderer.drawSegment(
           this.editingStateData.grounds[0],
           this.editingStateData.grounds[1],
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         this.renderer.drawDirectedSegment(
           this.editingStateData.grounds[0],
           this.mousePoint,
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         break;
       case EDIT_STATES.GROUND_POINT:
         this.renderer.drawSegment(
-          this.positions[this.editingStateData.points[0]],
+          this.linkage.positions[this.editingStateData.points[0]],
           this.editingStateData.grounds[0],
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         this.renderer.drawSegment(
           this.editingStateData.grounds[0],
           this.mousePoint,
-          {pointColor:'red', lineColor:'pink'}
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         break;
     }

@@ -15,7 +15,7 @@ module.exports = {
     p2: {
       base: 'p1',
       ref: 'p0',
-      angle: 0.9272952180016122, // atan(4/3)
+      angle: 0.0,
       len: 5,
     },
   },
