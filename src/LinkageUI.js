@@ -61,6 +61,7 @@ class LinkageUI {
     this.rotate = true;
     this.speedInc = SPEED_INC;
     this.mouseIsDown = false;
+    this.mouseWasDragged = false;
     this.mousePoint = null;
     this.hoveredSegment = null;
     this.hoveredPoint = null;
@@ -73,12 +74,15 @@ class LinkageUI {
     doc.onkeypress = this._onKeyPress.bind(this);
     doc.onmousemove = this._onMouseMove.bind(this);
     doc.onmousedown = this._onMouseDown.bind(this); 
-    doc.onmouseup = e => this.mouseIsDown = false;
+    doc.onmouseup = this._onMouseUp.bind(this); 
   }
 
   animate() {
     if (this.rotate) {
-      this._tryRotatingLinkageInput();
+      if (!this.linkage.tryRotatingLinkageInput(this.speedInc)) {
+        // reverse direction if the configuration is invalid
+        this._changeSpeed(-1);
+      }
     }
     
     this.renderer.drawLinkage({
@@ -96,8 +100,13 @@ class LinkageUI {
 
   _onMouseDown(e: Point) {
     this.mouseIsDown = true;
+    this.mouseWasDragged = false;
+  }
 
-    if (this.rotate) {
+  _onMouseUp(e: Point) {
+    this.mouseIsDown = false;
+
+    if (this.rotate || this.mouseWasDragged) {
       return;
     }
 
@@ -162,7 +171,7 @@ class LinkageUI {
         if (this.rotate) {
           this._changeSpeed(1.1);
         } else if (this.hoveredSegment) { 
-          this._tryChangingBarLength(
+          this.linkage.tryChangingBarLength(
             BAR_INC, 
             this.hoveredSegment
           );
@@ -172,7 +181,7 @@ class LinkageUI {
         if (this.rotate) {
           this._changeSpeed(1/1.1);
         } else if (this.hoveredSegment) { 
-          this._tryChangingBarLength(
+          this.linkage.tryChangingBarLength(
             -BAR_INC, 
             this.hoveredSegment
           );
@@ -187,11 +196,15 @@ class LinkageUI {
   }
   
   _onMouseMove(e: Point) {
-    this.mousePoint = this.renderer.inverseTransform(e);
-
     if (!this.rotate) {
+      if (this.mouseIsDown) {
+        this.mouseWasDragged = true;
+      }
+
+      this.mousePoint = this.renderer.inverseTransform(e);
+
       if (this.mouseIsDown && this.hoveredPoint) {
-        var couldDrag = this._tryDraggingGroundPoint(
+        var couldDrag = this.linkage.tryDraggingGroundPoint(
           this.mousePoint, 
           this.hoveredPoint.id
         );
@@ -214,35 +227,6 @@ class LinkageUI {
     this.speedInc *= factor;
   }
 
-  _tryChangingBarLength(lenChange: number, hoveredSegment: Array<{id: string}>) {
-    var p0id = hoveredSegment[0].id;
-    var p1id = hoveredSegment[1].id;
-    var oldLen = this.linkage.spec.points[p0id][p1id].len;
-    var newLen = oldLen + lenChange;
-
-    try {
-      this._changeBarLength(newLen, p0id, p1id);
-      this.linkage.calculatePositions();
-    } catch (e) {
-      this._changeBarLength(oldLen, p0id, p1id);
-      this.linkage.calculatePositions();
-    } 
-  }
-
-  _changeBarLength(len: number, p0id: string, p1id: string) {
-    this.linkage.spec.points[p0id][p1id].len = len;
-    this.linkage.spec.points[p1id][p0id].len = len;
-
-    var ext0 = this.linkage.spec.extenders[p0id];
-    var ext1 = this.linkage.spec.extenders[p1id];
-
-    if (ext0 && ext0.base === p1id) {
-      ext0.len = len;
-    } else if (ext1 && ext1.base === p0id) {
-      ext1.len = len;
-    } 
-  }
-
   _handleHover(currentPoint) {
     var {
       closestPointInfo: hoveredPointInfo, 
@@ -256,43 +240,6 @@ class LinkageUI {
       this.hoveredPoint = hoveredPointInfo.thing;
     } else if (hoveredSegmentInfo.thing) {
       this.hoveredSegment = hoveredSegmentInfo.thing;
-    }
-  }
-
-  _tryDraggingGroundPoint(
-    currentPoint: Point, 
-    hoveredPointID: string
-  ): boolean {
-    var groundPoint = this.linkage.spec.groundPoints[hoveredPointID];
-
-    if (!groundPoint) {
-      return;
-    }
-
-    try {
-      var {x: prevX, y: prevY} = groundPoint;
-      groundPoint.x = currentPoint.x;
-      groundPoint.y = currentPoint.y;
-      this.linkage.calculatePositions();
-      return true;
-    } catch (e) {
-      groundPoint.x = prevX;
-      groundPoint.y = prevY;
-      this.linkage.calculatePositions();
-    } 
-
-    return false;
-  }
-
-  _tryRotatingLinkageInput() {
-    try {
-      this.linkage.spec.extenders.p2.angle += this.speedInc;
-      this.linkage.calculatePositions();
-    } catch (e) {
-      // reverse direction if the configuration is invalid
-      this._changeSpeed(-1);
-      this.linkage.spec.extenders.p2.angle += this.speedInc;
-      this.linkage.calculatePositions();
     }
   }
 
