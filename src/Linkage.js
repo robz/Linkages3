@@ -46,15 +46,18 @@ class Linkage {
   }
 
   tryRotatingLinkageInput(speedInc: number) {
-    try {
-      this.spec.extenders.p2.angle += speedInc;
-      this.calculatePositions();
-      return true;
-    } catch (e) {
-      this.spec.extenders.p2.angle -= speedInc;
-      this.calculatePositions();
-      return false;
-    }
+    var flag = true;
+    Object.keys(this.spec.extenders).forEach((id) => {
+      try {
+        this.spec.extenders[id].angle += speedInc;
+        this.calculatePositions();
+      } catch (e) {
+        this.spec.extenders[id].angle -= speedInc;
+        this.calculatePositions();
+        flag = false;
+      }
+    });
+    return flag;
   }
 
   tryChangingBarLength(lenChange: number, hoveredSegment: Array<{id: string}>) {

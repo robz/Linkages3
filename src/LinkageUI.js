@@ -25,6 +25,7 @@ var KEYS = {
   SPACE: 32,
   T: 116,
   W: 119,
+  R: 82,
 };
 var BAR_INC = 1;
 var SPEED_INC = 0.04;
@@ -69,12 +70,31 @@ class LinkageUI {
     this.editingStateData = {grounds: [], points: []};
     this.selectedPointID = null;
     this.selectedSegment = null;
+    this.landingRotary = false;
 
     var doc: any = document;
     doc.onkeypress = this._onKeyPress.bind(this);
+    doc.onkeydown = this._onKeyDown.bind(this);
+    doc.onkeyup = this._onKeyUp.bind(this);
     doc.onmousemove = this._onMouseMove.bind(this);
     doc.onmousedown = this._onMouseDown.bind(this); 
     doc.onmouseup = this._onMouseUp.bind(this); 
+  }
+
+  _onKeyDown({which}: {which:number}) {
+    if (!this.rotate) {
+      if (which === KEYS.R) {
+        this.editingState = EDIT_STATES.ROTARY_HOVER;
+      }
+    }
+  }
+
+  _onKeyUp({which}: {which:number}) {
+    if (!this.rotate) {
+      if (which === KEYS.R) {
+        this.editingState = EDIT_STATES.INITIAL;
+      }
+    }
   }
 
   animate() {
@@ -310,6 +330,20 @@ class LinkageUI {
           {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
         );
         break;
+      case EDIT_STATES.ROTARY_HOVER:
+        if (this.mousePoint) {
+          this.renderer.drawSegment(
+            this.mousePoint,
+            {x:this.mousePoint.x + 1, y:this.mousePoint.y},
+            {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
+          );
+          this.renderer.drawSegment(
+            this.mousePoint,
+            {x:this.mousePoint.x + 3, y:this.mousePoint.y + 4},
+            {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
+          );
+        }
+        break; 
     }
   }
 }
