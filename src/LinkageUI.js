@@ -38,7 +38,6 @@ class LinkageUI {
   renderer: LinkageRenderer;
 
   rotate: boolean;
-  speedInc: number;
   mouseIsDown: boolean;
   mousePoint: Point;
   hoveredSegment: ?Array<{id: string}>;
@@ -60,7 +59,6 @@ class LinkageUI {
     this.linkage = new Linkage(linkageData);
 
     this.rotate = true;
-    this.speedInc = SPEED_INC;
     this.mouseIsDown = false;
     this.mouseWasDragged = false;
     this.mousePoint = null;
@@ -99,10 +97,7 @@ class LinkageUI {
 
   animate() {
     if (this.rotate) {
-      if (!this.linkage.tryRotatingLinkageInput(this.speedInc)) {
-        // reverse direction if the configuration is invalid
-        this._changeSpeed(-1);
-      }
+      this.linkage.tryRotatingLinkageInput();
     }
     
     this.renderer.drawLinkage({
@@ -171,6 +166,11 @@ class LinkageUI {
           this.editingStateData.points[1],
           this.editingStateData.grounds[0] 
         );
+        this.linkage.calculatePositions();
+        this.editingState = EDIT_STATES.INITIAL;
+        break;
+      case EDIT_STATES.ROTARY_LAND:
+        this.linkage.addRotaryInput(this.editingStateData.grounds[0]);
         this.linkage.calculatePositions();
         this.editingState = EDIT_STATES.INITIAL;
         break;
@@ -244,7 +244,7 @@ class LinkageUI {
   }
 
   _changeSpeed(factor: number) {
-    this.speedInc *= factor;
+    this.linkage.changeSpeed(factor);
   }
 
   _handleHover(currentPoint) {

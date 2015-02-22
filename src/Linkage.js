@@ -14,10 +14,25 @@ type LinkageSpecType = {
 class Linkage {
   spec: LinkageSpecType;
   positions: {[key:string]: Point};
+  speedIncs: {[key:string]: number};
 
   constructor(spec) {
     this.spec = spec;
     this.positions = {};
+    this.speedIncs = {};
+    Object.keys(this.spec.extenders).forEach((id) => {
+      this.speedIncs[id] = 0.04; 
+    });
+  }
+
+  changeSpeed(factor: number, id?: string) {
+    if (!id) {
+      Object.keys(this.speedIncs).forEach((id) => {
+        this.speedIncs[id] *= factor;
+      });
+    } else {
+      this.speedIncs[id] *= factor;
+    }
   }
 
   tryDraggingGroundPoint(
@@ -45,14 +60,15 @@ class Linkage {
     return false;
   }
 
-  tryRotatingLinkageInput(speedInc: number) {
+  tryRotatingLinkageInput() {
     var flag = true;
     Object.keys(this.spec.extenders).forEach((id) => {
       try {
-        this.spec.extenders[id].angle += speedInc;
+        this.spec.extenders[id].angle += this.speedIncs[id];
         this.calculatePositions();
       } catch (e) {
-        this.spec.extenders[id].angle -= speedInc;
+        this.changeSpeed(-1, id);
+        this.spec.extenders[id].angle += this.speedIncs[id];
         this.calculatePositions();
         flag = false;
       }
@@ -94,8 +110,37 @@ class Linkage {
     point1Id: string,
     dist: number
   ) {
+    if (!this.spec.points[point0Id]) {
+      this.spec.points[point0Id] = {};
+    }
+    if (!this.spec.points[point1Id]) {
+      this.spec.points[point1Id] = {};
+    }
     this.spec.points[point0Id][point1Id] = {len: dist};
     this.spec.points[point1Id][point0Id] = {len: dist};
+  }
+
+  addRotaryInput(
+    point1: Point,
+    len: number
+  ) {
+    var numPoints = Object.keys(this.spec.points).length;
+    var point0Id = 'p' + numPoints;
+    var point1Id = 'p' + (numPoints + 1);
+    var point2Id = 'p' + (numPoints + 2);
+
+    this.speedIncs[point2Id] = .04;
+    this.spec.extenders[point2Id] = {
+      base: point1Id,
+      ref: point0Id,
+      angle: Math.atan(4/3),
+      len: 5,
+    };
+    this.spec.groundPoints[point0Id] = {x: point1.x + 1, y: point1.y};
+    this.spec.groundPoints[point1Id] = {x: point1.x, y: point1.y};
+
+    this._addSegment(point0Id, point1Id, 1);
+    this._addSegment(point1Id, point2Id, 5);
   }
 
   addTriangle(
