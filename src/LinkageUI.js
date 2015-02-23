@@ -47,12 +47,8 @@ class LinkageUI {
   editingStateData: {
     grounds: Array<Point>;
     points: Array<string>; 
+    selectedRotary: string;
   };
-  selectedPointID: string;
-  selectedSegment: {
-    point0ID: string; 
-    point1ID: string; 
-  }; 
 
   constructor(canvasID: string, linkageData: LinkageDataType) {
     this.renderer = new LinkageRenderer(canvasID);
@@ -65,7 +61,7 @@ class LinkageUI {
     this.hoveredSegment = null;
     this.hoveredPoint = null;
     this.editingState = EDIT_STATES.INITIAL;
-    this.editingStateData = {grounds: [], points: []};
+    this.editingStateData = {grounds: [], points: [], selectedRotary: null};
     this.selectedPointID = null;
     this.selectedSegment = null;
     this.landingRotary = false;
@@ -77,22 +73,6 @@ class LinkageUI {
     doc.onmousemove = this._onMouseMove.bind(this);
     doc.onmousedown = this._onMouseDown.bind(this); 
     doc.onmouseup = this._onMouseUp.bind(this); 
-  }
-
-  _onKeyDown({which}: {which:number}) {
-    if (!this.rotate) {
-      if (which === KEYS.R) {
-        this.editingState = EDIT_STATES.ROTARY_HOVER;
-      }
-    }
-  }
-
-  _onKeyUp({which}: {which:number}) {
-    if (!this.rotate) {
-      if (which === KEYS.R) {
-        this.editingState = EDIT_STATES.INITIAL;
-      }
-    }
   }
 
   animate() {
@@ -107,10 +87,34 @@ class LinkageUI {
 
     if (!this.rotate) {
       this._drawHoverables();
+    }
+
+    if (!this.rotate || this.editingState === EDIT_STATES.ROTARY_SELECTED) {
       this._drawEditState();
     }
 
     window.requestAnimationFrame(this.animate.bind(this));
+  }
+
+  _onKeyDown({which}: {which:number}) {
+    if (!this.rotate) {
+      if (which === KEYS.R) {
+        this.editingState = EDIT_STATES.ROTARY_HOVER;
+      }
+    }
+  }
+
+  _onKeyUp({which}: {which:number}) {
+    if (!this.rotate) {
+      if (which === KEYS.R) {
+        this._resetEditState();
+      }
+    }
+  }
+
+  _resetEditState() {
+    this.editingState = EDIT_STATES.INITIAL;
+    this.editingStateData = {grounds: [], points: [], selectedRotary: null};
   }
 
   _onMouseDown(e: Point) {
@@ -128,15 +132,20 @@ class LinkageUI {
     var input = null;
  
     if (this.hoveredPoint) {
-      this.editingStateData.points.unshift(this.hoveredPoint.id);
-      input = EDIT_INPUT.POINT;
+      if (this.linkage.spec.rotaries[this.hoveredPoint.id]) {
+        this.editingStateData.selectedRotary = this.hoveredPoint.id;
+        input = EDIT_INPUT.ROTARY;
+      } else {
+        this.editingStateData.points.unshift(this.hoveredPoint.id);
+        input = EDIT_INPUT.POINT;
+      }
     } else if (this.hoveredSegment) {
       this.editingStateData.points.unshift(this.hoveredSegment[0].id);
       this.editingStateData.points.unshift(this.hoveredSegment[1].id);
       input = EDIT_INPUT.SEGMENT;
     } else {
       this.editingStateData.grounds.unshift(this.renderer.inverseTransform(e));
-      input = EDIT_INPUT.GROUND;
+      input = EDIT_INPUT.SPACE;
     }
 
     this.editingState = EDIT_STATE_TRANSITIONS[this.editingState][input];
@@ -149,7 +158,7 @@ class LinkageUI {
           this.editingStateData.points[0]
         );
         this.linkage.calculatePositions();
-        this.editingState = EDIT_STATES.INITIAL;
+        this._resetEditState();
         break;
       case EDIT_STATES.GROUND_TRIANGLE_2:
         this.linkage.addGroundSegment(
@@ -158,7 +167,7 @@ class LinkageUI {
           this.editingStateData.points[0]
         );
         this.linkage.calculatePositions();
-        this.editingState = EDIT_STATES.INITIAL;
+        this._resetEditState();
         break;
       case EDIT_STATES.DYNAMIC_TRIANGLE:
         this.linkage.addTriangle(
@@ -167,18 +176,16 @@ class LinkageUI {
           this.editingStateData.grounds[0] 
         );
         this.linkage.calculatePositions();
-        this.editingState = EDIT_STATES.INITIAL;
+        this._resetEditState();
         break;
       case EDIT_STATES.ROTARY_LAND:
         this.linkage.addRotaryInput(this.editingStateData.grounds[0]);
         this.linkage.calculatePositions();
-        this.editingState = EDIT_STATES.INITIAL;
+        this._resetEditState();
         break;
-    }
-
-    if (this.editingState === EDIT_STATES.INITIAL) {
-      this.editingStateData.points = [];
-      this.editingStateData.grounds = [];
+      case EDIT_STATES.INITIAL:
+        this._resetEditState();
+        break; 
     }
   }
 
@@ -189,7 +196,7 @@ class LinkageUI {
         break;
       case KEYS.W:
         if (this.rotate) {
-          this._changeSpeed(1.1);
+          this.linkage.changeSpeed(1.1, this.editingStateData.selectedRotary);
         } else if (this.hoveredSegment) { 
           this.linkage.tryChangingBarLength(
             BAR_INC, 
@@ -199,7 +206,7 @@ class LinkageUI {
         break;
       case KEYS.S:
         if (this.rotate) {
-          this._changeSpeed(1/1.1);
+          this.linkage.changeSpeed(0.9, this.editingStateData.selectedRotary);
         } else if (this.hoveredSegment) { 
           this.linkage.tryChangingBarLength(
             -BAR_INC, 
@@ -209,7 +216,7 @@ class LinkageUI {
         break;
       case KEYS.T:
         if (this.rotate) {
-          this._changeSpeed(-1); 
+          this.linkage.changeSpeed(-1, this.editingStateData.selectedRotary);
         }
         break;
     }
@@ -228,6 +235,9 @@ class LinkageUI {
           this.mousePoint, 
           this.hoveredPoint.id
         );
+        if (couldDrag) {
+          this._resetEditState();
+        }
       } else {
         this._handleHover(this.mousePoint);
       }
@@ -237,14 +247,10 @@ class LinkageUI {
   _toggleRotation() {
     this.rotate = !this.rotate;
     if (this.rotate) {
-      this.hoveredPoint = null;
-      this.hoveredSegment = null;
-      this.editingState = 0;
+      if (this.editingState !== EDIT_STATES.ROTARY_SELECTED) {
+        this._resetEditState();
+      }
     }
-  }
-
-  _changeSpeed(factor: number) {
-    this.linkage.changeSpeed(factor);
   }
 
   _handleHover(currentPoint) {
@@ -344,6 +350,20 @@ class LinkageUI {
           );
         }
         break; 
+      case EDIT_STATES.ROTARY_SELECTED:
+        var extenderId = this.linkage.spec.rotaries[this.editingStateData.selectedRotary];
+        var extender = this.linkage.spec.extenders[extenderId];
+        this.renderer.drawSegment(
+          this.linkage.positions[extenderId],
+          this.linkage.positions[extender.base],
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
+        );
+        this.renderer.drawSegment(
+          this.linkage.positions[extender.ref],
+          this.linkage.positions[extender.base],
+          {pointColor:GHOST_POINT_COLOR, lineColor:GHOST_LINE_COLOR}
+        );
+        break;
     }
   }
 }

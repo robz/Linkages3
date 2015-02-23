@@ -20,6 +20,9 @@ module.exports = {
       speed: 0.04,
     },
   },
+  rotaries: {
+    p1: 'p2',
+  },
   groundPoints: {
     p0: { x: 1, y: 0 },
     p1: { x: 0, y: 0 }, 

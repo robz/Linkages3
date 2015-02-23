@@ -26,6 +26,7 @@ class Linkage {
         this.spec.extenders[id].speed *= factor;
       });
     } else {
+      id = this.spec.rotaries[id];
       this.spec.extenders[id].speed *= factor;
     }
   }
@@ -58,12 +59,13 @@ class Linkage {
   tryRotatingLinkageInput() {
     var flag = true;
     Object.keys(this.spec.extenders).forEach((id) => {
+      var rotaryInput = this.spec.extenders[id];
       try {
-        this.spec.extenders[id].angle += this.spec.extenders[id].speed;
+        rotaryInput.angle += rotaryInput.speed;
         this.calculatePositions();
       } catch (e) {
-        this.changeSpeed(-1, id);
-        this.spec.extenders[id].angle += this.spec.extenders[id].speed;
+        this.changeSpeed(-1, id.base);
+        rotaryInput.angle += rotaryInput.speed;
         this.calculatePositions();
         flag = false;
       }
@@ -133,6 +135,7 @@ class Linkage {
     };
     this.spec.groundPoints[point0Id] = {x: point1.x + 1, y: point1.y};
     this.spec.groundPoints[point1Id] = {x: point1.x, y: point1.y};
+    this.spec.rotaries[point1Id] = point2Id;
 
     this._addSegment(point0Id, point1Id, 1);
     this._addSegment(point1Id, point2Id, 5);
