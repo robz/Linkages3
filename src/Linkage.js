@@ -14,24 +14,19 @@ type LinkageSpecType = {
 class Linkage {
   spec: LinkageSpecType;
   positions: {[key:string]: Point};
-  speedIncs: {[key:string]: number};
 
   constructor(spec) {
     this.spec = spec;
     this.positions = {};
-    this.speedIncs = {};
-    Object.keys(this.spec.extenders).forEach((id) => {
-      this.speedIncs[id] = 0.04; 
-    });
   }
 
   changeSpeed(factor: number, id?: string) {
     if (!id) {
-      Object.keys(this.speedIncs).forEach((id) => {
-        this.speedIncs[id] *= factor;
+      Object.keys(this.spec.extenders).forEach((id) => {
+        this.spec.extenders[id].speed *= factor;
       });
     } else {
-      this.speedIncs[id] *= factor;
+      this.spec.extenders[id].speed *= factor;
     }
   }
 
@@ -64,11 +59,11 @@ class Linkage {
     var flag = true;
     Object.keys(this.spec.extenders).forEach((id) => {
       try {
-        this.spec.extenders[id].angle += this.speedIncs[id];
+        this.spec.extenders[id].angle += this.spec.extenders[id].speed;
         this.calculatePositions();
       } catch (e) {
         this.changeSpeed(-1, id);
-        this.spec.extenders[id].angle += this.speedIncs[id];
+        this.spec.extenders[id].angle += this.spec.extenders[id].speed;
         this.calculatePositions();
         flag = false;
       }
@@ -129,11 +124,11 @@ class Linkage {
     var point1Id = 'p' + (numPoints + 1);
     var point2Id = 'p' + (numPoints + 2);
 
-    this.speedIncs[point2Id] = .04;
     this.spec.extenders[point2Id] = {
       base: point1Id,
       ref: point0Id,
       angle: Math.atan(4/3),
+      speed: 0.04,
       len: 5,
     };
     this.spec.groundPoints[point0Id] = {x: point1.x + 1, y: point1.y};
@@ -233,7 +228,7 @@ class Linkage {
     );
 
     var closestSegmentInfo = Geom.findClosestThingToPoint(
-      this.makeSegments(),
+      this._makeSegments(),
       currentPoint,
       Geom.calcMinDistFromSegmentToPoint
     );
@@ -241,7 +236,7 @@ class Linkage {
     return {closestPointInfo, closestSegmentInfo};
   }
 
-  makeSegments(): Array<Array<Point>> {
+  _makeSegments(): Array<Array<Point>> {
     var segments = [];
 
     Object.keys(this.spec.points).forEach((pointID) => {

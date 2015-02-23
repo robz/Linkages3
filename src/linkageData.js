@@ -17,6 +17,7 @@ module.exports = {
       ref: 'p0',
       angle: 0.0,
       len: 5,
+      speed: 0.04,
     },
   },
   groundPoints: {
