@@ -27,6 +27,6 @@ Here are the controls so far:
 
 \* any bar except ones between rotary inputs and reference points
 
-The rotary input will automatically reverse if it's about to put the linakge into an impossible configuration.
+Rotary inputs will automatically reverse if they're about to put the linakge into an impossible configuration.
 
 This is based from my [boilerplate](https://github.com/robz/boilerplate) repository.
