@@ -1,13 +1,21 @@
 var UIState = require('./UIState');
 
 class UI {
-  constructor(linkage) {
+  constructor(canvasID, linkage) {
+    this.renderer = new LinkageRenderer(canvasID);
     this.state = new UIState(linkage);
 
+    this.mousePoint = null;
+
+    this.hoverSegmentIDs = null;
     this.hoverPointID = null;
-    this.hoverPoint = null;
-    this.hoverGround = null;
-    this.hoverRotary = null;
+    this.hoverPoint = false;
+    this.hoverGround = false;
+    this.hoverRotary = false;
+  }
+
+  animate() {
+    this.state.animate(this.renderer, this.mousePoint);
   }
 
   onMouseDown(e) {
@@ -23,8 +31,7 @@ class UI {
   }
 
   onMouseUp(e) {
-    var newState = null;
-
+    this.dragging = false;
     var newState = this.state.onMouseUp();
 
     if (!newState && this.hoverPointID) {
@@ -47,21 +54,46 @@ class UI {
   }
   
   onMouseMove(e) {
+    this.mousePoint = e;
+
     if (this.dragging) {
       var newState = this.state.onMouseDrag(e); 
       this.state = newState ? newState : this.state;
     } else {
-      this.setNewHoverables(e);
+      this.setHovers(e);
     }
-  }
-
-  setNewHoverables(e) {
-    // find closest point or segment
-    // if point, find what kind it is
   }
 
   onKeyUp(e) {
     var newState = this.state.onKeyUp(e.which);
     this.state = newState ? newState : this.state;
+  }
+
+  setHovers(e) {
+    this.hoverSegmentIDs = null;
+    this.hoverPointID = null;
+    this.hoverPoint = false;
+    this.hoverGround = false;
+    this.hoverRotary = false;
+
+    var {closestPointInfo, closestSegmentInfo} = 
+      this.state.linkage.getClosestThings(e);
+
+    if (closestPointInfo.thing) {
+      this.hoverPointID = hoveredPointInfo.thing.id;
+      
+      if (this.state.linkage.spec.rotaries[this.hoverPointID]) {
+        this.hoverRotary = true; 
+      } else if (this.state.linkage.spec.groundPoints[this.hoverPointID]) {
+        this.hoverGround = true; 
+      } else if (this.state.linkage.spec.point[this.hoverPointID]) {
+        this.hoverPoint = true; 
+      }
+    } else if (hoveredSegmentInfo.thing) {
+      this.hoverSegmentIDs = [
+        hoveredSegmentInfo.thing[0].id,
+        hoveredSegmentInfo.thing[1].id
+      ];
+    }
   }
 }
