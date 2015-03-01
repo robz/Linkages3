@@ -46,10 +46,10 @@ class State10 extends BaseState { // initial unpaused
   onKeyUp(key) {
     switch (key) {
       case KEYS.DOWN:
-        if (this.p0id) { this.linkage.decRotary(this.p0id); }
+        this.linkage.changeSpeed(0.9, this.p0id);
         break;
       case KEYS.UP:
-        if (this.p0id) { this.linkage.accRotary(this.p0id); }
+        this.linkage.changeSpeed(1.1, this.p0id);
         break;
       case KEYS.SPACE:
         return new State0(this.linkage);
@@ -90,7 +90,7 @@ class State1 extends BaseState { // canvas1
 
 class State2 extends BaseState { // canvas1 + canvas2
   onAnyPointUp(p0id) {
-    this.linkage.addGroundTriangle(this.pointA, this.pointB, p0id);
+    this.linkage.addGroundSegment(this.pointA, this.pointB, p0id);
     return new State0(this.linkage);
   }
 
@@ -109,7 +109,7 @@ class State3 extends BaseState { // ground down
 
   onMouseDrag(point) {
     this.dragged = true;
-    this.linkage.moveGroundPoint(this.p0id, point);
+    this.linkage.tryDraggingGroundPoint(point, this.p0id);
     return this;
   }
 }
@@ -126,7 +126,7 @@ class State4 extends BaseState { // point1
 
 class State5 extends BaseState { // point2
   onCanvasUp(pointA) {
-    this.linkage.addDynamicTriangle(this.p0id, this.p1id, pointA);
+    this.linkage.addTriangle(this.p0id, this.p1id, pointA);
     return new State0(this.linkage);
   }
 
@@ -138,12 +138,12 @@ class State5 extends BaseState { // point2
 
 class State6 extends BaseState { // point1 + canvas1
   onCanvasUp(pointB) {
-    this.linkage.addGroundTriangle(this.p0id, this.pointA, pointB);
+    this.linkage.addGroundSegment(this.pointA, this.pointB, p0id);
     return new State0(this.linkage);
   }
 
   onAnyPointUp(p1id) {
-    this.linkage.addDynamicTriangle(this.p0id, p1id, this.pointA);
+    this.linkage.addTriangle(this.p0id, this.p1id, pointA);
     return new State0(this.linkage);
   }
 
@@ -162,7 +162,7 @@ class State7 extends BaseState { // rotary down
 
   onMouseDrag(point) {
     this.dragged = true;
-    this.linkage.moveGroundPoint(this.p0id, point);
+    this.linkage.tryDraggingGroundPoint(point, this.p0id);
     return this;
   }
 }
@@ -185,17 +185,17 @@ class State8 extends BaseState { // rotary selected
 
 class State9 extends BaseState { // segment selected
   onCanvasUp(pointA) {
-    this.linkage.addDynamicTriangle(this.p0id, this.p1id, pointA);
+    this.linkage.addTriangle(this.p0id, this.p1id, pointA);
     return new State0(this.linkage);
   }
 
   onKeyUp(key) {
     switch (key) {
       case KEYS.DOWN:
-        this.linkage.decBarLength(this.p0id, this.p1id);
+        this.linkage.tryChangingBarLength(-1, [this.p0id, this.p1id]);
         return this;
       case KEYS.UP:
-        this.linkage.incBarLength(this.p0id, this.p1id);
+        this.linkage.tryChangingBarLength(1, [this.p0id, this.p1id]);
         return this;
       default:
         return super.onKeyUp(key);
