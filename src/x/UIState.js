@@ -1,13 +1,15 @@
 var KEYS = require('./KEYS');
 
 class BaseState {
-  constructor(linkage, {p0id, p1id, pointA, pointB, selectedRotary}) {
+  constructor(linkage, spec) {
     this.linkage = linkage;
-    this.p0id = p0id;
-    this.p1id = p1id;
-    this.pointA = pointA; 
-    this.pointB = pointB; 
-    this.selectedRotary = selectedRotary;
+
+    if (spec) {
+      this.p0id = spec.p0id;
+      this.p1id = spec.p1id;
+      this.pointA = spec.pointA; 
+      this.pointB = spec.pointB; 
+    }
   }
 
   onAnyPointUp() {}
@@ -20,13 +22,17 @@ class BaseState {
   onSegmentUp(p0id, p1id) {}
 
   draw(renderer) {
-    renderer.drawLinkage(this.linkage.spec);
+    renderer.drawLinkage({
+      positions: this.linkage.positions,
+      points: this.linkage.spec.points
+    });
   }
 
   onKeyUp(key) {
     switch (key) {
+      case KEYS.ESC:
       case KEYS.SPACE:
-        return new State10(this.linkage);
+        return new State0(this.linkage);
       default:
         return this;  
     }
@@ -35,6 +41,7 @@ class BaseState {
 
 class State10 extends BaseState { // initial unpaused
   draw(ctx, renderer) {
+    this.linkage.tryRotatingLinkageInput();
     super.draw(ctx, renderer);    
 
     // if we have a selected rotary
@@ -44,18 +51,19 @@ class State10 extends BaseState { // initial unpaused
   }
 
   onKeyUp(key) {
+    console.log('hi');
     switch (key) {
       case KEYS.DOWN:
         this.linkage.changeSpeed(0.9, this.p0id);
+        return this;
         break;
       case KEYS.UP:
         this.linkage.changeSpeed(1.1, this.p0id);
-        break;
-      case KEYS.SPACE:
-        return new State0(this.linkage);
+        return this;
+      default:
+        return super.onKeyUp(key);
     }
 
-    return this;
   }
 }
 
@@ -68,9 +76,6 @@ class State0 extends BaseState { // initial paused
 
   onKeyUp(key) {
     switch (key) {
-      case KEYS.ESC:
-        return new State0(this.linkage);
-        break;
       case KEYS.SPACE:
         return new State10(this.linkage);
       default:
@@ -208,4 +213,4 @@ class State9 extends BaseState { // segment selected
   }
 }
 
-module.exports = State0;
+module.exports = State10;

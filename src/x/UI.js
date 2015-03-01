@@ -1,8 +1,10 @@
 var UIState = require('./UIState');
+var LinkageRenderer = require('../LinkageRenderer');
 
 class UI {
   constructor(canvasID, linkage) {
     this.renderer = new LinkageRenderer(canvasID);
+    linkage.calculatePositions();
     this.state = new UIState(linkage);
 
     this.mousePoint = null;
@@ -12,14 +14,23 @@ class UI {
     this.hoverPoint = false;
     this.hoverGround = false;
     this.hoverRotary = false;
+
+    var doc: any = document;
+    doc.onkeyup = this.onKeyUp.bind(this);
+    doc.onmousemove = this.onMouseMove.bind(this);
+    doc.onmousedown = this.onMouseDown.bind(this); 
+    doc.onmouseup = this.onMouseUp.bind(this); 
   }
 
   animate() {
-    this.state.animate(this.renderer, this.mousePoint);
+    this.state.linkage.calculatePositions();
+    this.state.draw(this.renderer, this.mousePoint);
+    window.requestAnimationFrame(this.animate.bind(this));
   }
 
   onMouseDown(e) {
     this.dragging = true;
+    var newState = null;
     
     if (this.hoverRotary) {
       newState = this.state.onRotaryDown(this.hoverPointID);
@@ -80,7 +91,7 @@ class UI {
       this.state.linkage.getClosestThings(e);
 
     if (closestPointInfo.thing) {
-      this.hoverPointID = hoveredPointInfo.thing.id;
+      this.hoverPointID = closestPointInfo.thing.id;
       
       if (this.state.linkage.spec.rotaries[this.hoverPointID]) {
         this.hoverRotary = true; 
@@ -89,11 +100,13 @@ class UI {
       } else if (this.state.linkage.spec.point[this.hoverPointID]) {
         this.hoverPoint = true; 
       }
-    } else if (hoveredSegmentInfo.thing) {
+    } else if (closestSegmentInfo.thing) {
       this.hoverSegmentIDs = [
-        hoveredSegmentInfo.thing[0].id,
-        hoveredSegmentInfo.thing[1].id
+        closestSegmentInfo.thing[0].id,
+        closestSegmentInfo.thing[1].id
       ];
     }
   }
 }
+
+module.exports = UI;
