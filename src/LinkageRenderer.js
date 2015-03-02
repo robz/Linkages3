@@ -100,6 +100,23 @@ class CanvasRenderer {
     this.drawLine(p1, p2, options);
     this.drawPoint(p1, options);
   }
+
+  drawLines(...args) {
+    var options = args.pop(); 
+
+    this.drawLine(args[0], args[1], options);
+
+    if (args.length === 3) {
+      this.drawLine(args[1], args[2], options);
+    }
+
+    this.drawPoint(args[0], options);
+    this.drawPoint(args[1], options);
+
+    if (args.length === 3) {
+      this.drawPoint(args[2], options);
+    }
+  }
 }
 
 class LinkageRenderer extends CanvasRenderer {

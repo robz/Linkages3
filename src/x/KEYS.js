@@ -1,5 +1,5 @@
 module.exports = {
-  DOWN: 115,
-  UP: 119,
+  DOWN: 83,
+  UP: 87,
   SPACE: 32,
 };

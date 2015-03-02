@@ -52,12 +52,10 @@ class UI {
     if (!newState) {
       if (this.hoverSegmentIDs) {
         newState = this.state.onSegmentUp(...this.hoverSegmentIDs);
-      } else if (this.hoverGround || this.hoverRotary) {
-        newState = this.state.onGroundUp(this.hoverPointID);
-      } else if (this.hoverPoint) {
+      } else if (this.hoverPoint || this.hoverGround || this.hoverRotary) {
         newState = this.state.onPointUp(this.hoverPointID);
       } else {
-        newState = this.state.onCanvasUp(this.hoverPointID);
+        newState = this.state.onCanvasUp(this.renderer.inverseTransform(e));
       }
     }
 
@@ -65,13 +63,13 @@ class UI {
   }
   
   onMouseMove(e) {
-    this.mousePoint = e;
+    this.mousePoint = this.renderer.inverseTransform(e);
 
     if (this.dragging) {
-      var newState = this.state.onMouseDrag(e); 
+      var newState = this.state.onMouseDrag(this.mousePoint); 
       this.state = newState ? newState : this.state;
     } else {
-      this.setHovers(e);
+      this.setHovers(this.mousePoint);
     }
   }
 
@@ -80,7 +78,7 @@ class UI {
     this.state = newState ? newState : this.state;
   }
 
-  setHovers(e) {
+  setHovers(currentPoint) {
     this.hoverSegmentIDs = null;
     this.hoverPointID = null;
     this.hoverPoint = false;
@@ -88,7 +86,7 @@ class UI {
     this.hoverRotary = false;
 
     var {closestPointInfo, closestSegmentInfo} = 
-      this.state.linkage.getClosestThings(e);
+      this.state.linkage.getClosestThings(currentPoint);
 
     if (closestPointInfo.thing) {
       this.hoverPointID = closestPointInfo.thing.id;
@@ -97,7 +95,7 @@ class UI {
         this.hoverRotary = true; 
       } else if (this.state.linkage.spec.groundPoints[this.hoverPointID]) {
         this.hoverGround = true; 
-      } else if (this.state.linkage.spec.point[this.hoverPointID]) {
+      } else if (this.state.linkage.spec.points[this.hoverPointID]) {
         this.hoverPoint = true; 
       }
     } else if (closestSegmentInfo.thing) {

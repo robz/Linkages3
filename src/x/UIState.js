@@ -1,7 +1,13 @@
 var KEYS = require('./KEYS');
 
+var ghostOptions = {
+  lineColor: 'pink',
+  pointColor: 'red',
+};
+
 class BaseState {
   constructor(linkage, spec) {
+    console.log(new Error().stack);
     this.linkage = linkage;
 
     if (spec) {
@@ -40,9 +46,9 @@ class BaseState {
 }
 
 class State10 extends BaseState { // initial unpaused
-  draw(ctx, renderer) {
+  draw(renderer) {
     this.linkage.tryRotatingLinkageInput();
-    super.draw(ctx, renderer);    
+    super.draw(renderer);    
 
     // if we have a selected rotary
     if (this.p0id) {
@@ -51,7 +57,6 @@ class State10 extends BaseState { // initial unpaused
   }
 
   onKeyUp(key) {
-    console.log('hi');
     switch (key) {
       case KEYS.DOWN:
         this.linkage.changeSpeed(0.9, this.p0id);
@@ -63,7 +68,6 @@ class State10 extends BaseState { // initial unpaused
       default:
         return super.onKeyUp(key);
     }
-
   }
 }
 
@@ -85,11 +89,11 @@ class State0 extends BaseState { // initial paused
 }
 
 class State1 extends BaseState { // canvas1
-  onCanvasUp(pointB) { return new State1(this.linkage, {pointA: this.pointA, pointB}) } 
+  onCanvasUp(pointB) { return new State2(this.linkage, {pointA: this.pointA, pointB}) } 
 
-  draw(ctx, renderer, mousePoint) {
-    super.draw(ctx, renderer);
-    // draw line from this.pointA to mousePoint  
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
+    renderer.drawLines(this.pointA, mousePoint, ghostOptions);
   }
 }
 
@@ -99,9 +103,10 @@ class State2 extends BaseState { // canvas1 + canvas2
     return new State0(this.linkage);
   }
 
-  draw(ctx, renderer, mousePoint) {
-    super.draw(ctx, renderer);
-    // draw pointA to pointB to mousePoint  
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
+    renderer.drawLines(this.pointA, this.pointB, ghostOptions);
+    renderer.drawLines(this.pointB, mousePoint, ghostOptions);
   }
 }
 
@@ -123,9 +128,13 @@ class State4 extends BaseState { // point1
   onAnyPointUp(p1id) { return new State5(this.linkage, {p0id: this.p0id, p1id}) }
   onCanvasUp(pointA) { return new State6(this.linkage, {p0id: this.p0id, pointA}) }
 
-  draw(ctx, renderer, mousePoint) {
-    super.draw(ctx, renderer);
-    // draw p0id to mousePoint
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
+    renderer.drawLines(
+      this.linkage.positions[this.p0id],
+      mousePoint, 
+      ghostOptions
+    );
   }
 }
 
@@ -135,9 +144,14 @@ class State5 extends BaseState { // point2
     return new State0(this.linkage);
   }
 
-  draw(ctx, renderer, mousePoint) {
-    super.draw(ctx, renderer);
-    // draw p0id to p1id to mousePoint
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
+    renderer.drawLines(
+      this.linkage.positions[this.p0id],
+      this.linkage.positions[this.p1id],
+      mousePoint, 
+      ghostOptions
+    );
   }
 }
 
@@ -148,13 +162,18 @@ class State6 extends BaseState { // point1 + canvas1
   }
 
   onAnyPointUp(p1id) {
-    this.linkage.addTriangle(this.p0id, this.p1id, pointA);
+    this.linkage.addTriangle(this.p0id, p1id, this.pointA);
     return new State0(this.linkage);
   }
 
-  draw(ctx, renderer, mousePoint) {
-    super.draw(ctx, renderer);
-    // draw p0id to pointA to mousePoint
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
+    renderer.drawLines(
+      this.linkage.positions[this.p0id],
+      this.pointA,
+      mousePoint, 
+      ghostOptions
+    );
   }
 }
 
@@ -182,8 +201,8 @@ class State8 extends BaseState { // rotary selected
     }
   }
 
-  draw(ctx, renderer, mousePoint) {
-    super.draw(ctx, renderer);
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
     // draw rotary
   }
 }
@@ -197,19 +216,24 @@ class State9 extends BaseState { // segment selected
   onKeyUp(key) {
     switch (key) {
       case KEYS.DOWN:
-        this.linkage.tryChangingBarLength(-1, [this.p0id, this.p1id]);
+        this.linkage.tryChangingBarLength(-1, [{id:this.p0id}, {id:this.p1id}]);
         return this;
       case KEYS.UP:
-        this.linkage.tryChangingBarLength(1, [this.p0id, this.p1id]);
+        this.linkage.tryChangingBarLength(1, [{id:this.p0id}, {id:this.p1id}]);
         return this;
       default:
         return super.onKeyUp(key);
     }
   }
 
-  draw(ctx, renderer, mousePoint) {
-    super.draw(ctx, renderer);
-    // draw p0id to p1id to mousePoint
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
+    renderer.drawLines(
+      this.linkage.positions[this.p0id],
+      mousePoint,
+      this.linkage.positions[this.p1id], 
+      ghostOptions
+    );
   }
 }
 
