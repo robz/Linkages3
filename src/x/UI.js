@@ -17,9 +17,11 @@ class UI {
 
     var doc: any = document;
     doc.onkeyup = this.onKeyUp.bind(this);
+    doc.onkeydown = this.onKeyDown.bind(this);
+    doc.onkeypress = this.onKeyPress.bind(this);
     doc.onmousemove = this.onMouseMove.bind(this);
-    doc.onmousedown = this.onMouseDown.bind(this); 
-    doc.onmouseup = this.onMouseUp.bind(this); 
+    doc.onmousedown = this.onMouseDown.bind(this);
+    doc.onmouseup = this.onMouseUp.bind(this);
   }
 
   animate() {
@@ -31,7 +33,7 @@ class UI {
   onMouseDown(e) {
     this.dragging = true;
     var newState = null;
-    
+
     if (this.hoverRotary) {
       newState = this.state.onRotaryDown(this.hoverPointID);
     } else if (this.hoverGround) {
@@ -43,11 +45,12 @@ class UI {
 
   onMouseUp(e) {
     this.dragging = false;
+
     var newState = this.state.onMouseUp();
 
     if (!newState && this.hoverPointID) {
       newState = this.state.onAnyPointUp(this.hoverPointID);
-    } 
+    }
 
     if (!newState) {
       if (this.hoverSegmentIDs) {
@@ -61,12 +64,12 @@ class UI {
 
     this.state = newState ? newState : this.state;
   }
-  
+
   onMouseMove(e) {
     this.mousePoint = this.renderer.inverseTransform(e);
 
     if (this.dragging) {
-      var newState = this.state.onMouseDrag(this.mousePoint); 
+      var newState = this.state.onMouseDrag(this.mousePoint);
       this.state = newState ? newState : this.state;
     } else {
       this.setHovers(this.mousePoint);
@@ -78,6 +81,16 @@ class UI {
     this.state = newState ? newState : this.state;
   }
 
+  onKeyDown(e) {
+    var newState = this.state.onKeyDown(e.which);
+    this.state = newState ? newState : this.state;
+  }
+
+  onKeyPress(e) {
+    var newState = this.state.onKeyPress(e.which);
+    this.state = newState ? newState : this.state;
+  }
+
   setHovers(currentPoint) {
     this.hoverSegmentIDs = null;
     this.hoverPointID = null;
@@ -85,18 +98,18 @@ class UI {
     this.hoverGround = false;
     this.hoverRotary = false;
 
-    var {closestPointInfo, closestSegmentInfo} = 
+    var {closestPointInfo, closestSegmentInfo} =
       this.state.linkage.getClosestThings(currentPoint);
 
     if (closestPointInfo.thing) {
       this.hoverPointID = closestPointInfo.thing.id;
-      
+
       if (this.state.linkage.spec.rotaries[this.hoverPointID]) {
-        this.hoverRotary = true; 
+        this.hoverRotary = true;
       } else if (this.state.linkage.spec.groundPoints[this.hoverPointID]) {
-        this.hoverGround = true; 
+        this.hoverGround = true;
       } else if (this.state.linkage.spec.points[this.hoverPointID]) {
-        this.hoverPoint = true; 
+        this.hoverPoint = true;
       }
     } else if (closestSegmentInfo.thing) {
       this.hoverSegmentIDs = [
