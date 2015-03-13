@@ -46,7 +46,8 @@ class UI {
   onMouseUp(e) {
     this.dragging = false;
 
-    var newState = this.state.onMouseUp();
+    var mousePoint = this.renderer.inverseTransform(e);
+    var newState = this.state.onMouseUp(mousePoint);
 
     if (!newState && this.hoverPointID) {
       newState = this.state.onAnyPointUp(this.hoverPointID);
@@ -58,7 +59,7 @@ class UI {
       } else if (this.hoverPoint || this.hoverGround || this.hoverRotary) {
         newState = this.state.onPointUp(this.hoverPointID);
       } else {
-        newState = this.state.onCanvasUp(this.renderer.inverseTransform(e));
+        newState = this.state.onCanvasUp(mousePoint);
       }
     }
 

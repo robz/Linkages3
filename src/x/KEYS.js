@@ -1,7 +1,9 @@
 module.exports = {
-  DOWN: 83,
-  DOWN_2: 115,
-  UP: 87,
-  UP_2: 119,
+  S: 83,
+  s: 115,
+  W: 87,
+  w: 119,
   SPACE: 32,
+  R: 82,
+  r: 120,
 };

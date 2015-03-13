@@ -26,12 +26,12 @@ class BaseState {
     });
   }
 
-  onPointUp(p0id) {}
-  onAnyPointUp() {}
-  onCanvasUp(pointA) {}
   onGroundDown(p0id) {}
   onRotaryDown(p0id) {}
+  onAnyPointUp(p0id) {}
+  onPointUp(p0id) {}
   onSegmentUp(p0id, p1id) {}
+  onCanvasUp(pointA) {}
 
   onMouseDrag(point) {}
   onMouseDown() {}
@@ -63,13 +63,13 @@ class State10 extends BaseState { // initial unpaused
 
   onKeyPress(key) {
     switch (key) {
-      case KEYS.DOWN:
-      case KEYS.DOWN_2:
+      case KEYS.S:
+      case KEYS.s:
         this.linkage.changeSpeed(0.9, this.p0id);
         return this;
         break;
-      case KEYS.UP:
-      case KEYS.UP_2:
+      case KEYS.W:
+      case KEYS.w:
         this.linkage.changeSpeed(1.1, this.p0id);
         return this;
       default:
@@ -95,6 +95,44 @@ class State0 extends PausedState { // initial paused
   onPointUp(p0id) {         return new State4(this.linkage, {p0id}) }
   onSegmentUp(p0id, p1id) { return new State9(this.linkage, {p0id, p1id}) }
   onCanvasUp(pointA) {      return new State1(this.linkage, {pointA}) }
+
+  onKeyDown(key) {
+    console.log(key);
+    switch (key) {
+      case KEYS.R:
+      case KEYS.r:
+        return new State11(this.linkage);
+      default:
+        return this;
+    }
+  }
+}
+
+class State11 extends PausedState {
+  onKeyUp(key) {
+    switch (key) {
+      case KEYS.R:
+      case KEYS.r:
+        return new State0(this.linkage);
+      default:
+        return super.onKeyUp(key);
+    }
+  }
+
+  onMouseUp(mousePoint) {
+    this.linkage.addRotaryInput(mousePoint);
+    return new State0(this.linkage);
+  }
+
+  draw(renderer, mousePoint) {
+    super.draw(renderer);
+    renderer.drawLines(
+      {x: mousePoint.x + 3, y: mousePoint.y + 4},
+      mousePoint,
+      {x: mousePoint.x + 1, y: mousePoint.y},
+      ghostOptions
+    );
+  }
 }
 
 class State1 extends PausedState { // canvas1
@@ -224,12 +262,12 @@ class State9 extends PausedState { // segment selected
 
   onKeyPress(key) {
     switch (key) {
-      case KEYS.DOWN:
-      case KEYS.DOWN_2:
+      case KEYS.S:
+      case KEYS.s:
         this.linkage.tryChangingBarLength(-1, [{id:this.p0id}, {id:this.p1id}]);
         return this;
-      case KEYS.UP:
-      case KEYS.UP_2:
+      case KEYS.W:
+      case KEYS.w:
         this.linkage.tryChangingBarLength(1, [{id:this.p0id}, {id:this.p1id}]);
         return this;
       default:
