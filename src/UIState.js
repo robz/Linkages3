@@ -7,6 +7,7 @@ var ghostOptions = {
 
 class BaseState {
   constructor(linkage, spec) {
+    // state transition debugging
     console.log(new Error().stack);
 
     this.linkage = linkage;
@@ -22,7 +23,7 @@ class BaseState {
   draw(renderer) {
     renderer.drawLinkage({
       positions: this.linkage.positions,
-      points: this.linkage.spec.points
+      points: this.linkage.spec.points,
     });
   }
 
@@ -39,15 +40,7 @@ class BaseState {
 
   onKeyPress(key) {}
   onKeyDown(key) {}
-  onKeyUp(key) {
-    switch (key) {
-      case KEYS.ESC:
-      case KEYS.SPACE:
-        return new State0(this.linkage);
-      default:
-        return this;
-    }
-  }
+  onKeyUp(key) {}
 }
 
 class State10 extends BaseState { // initial unpaused
@@ -55,8 +48,8 @@ class State10 extends BaseState { // initial unpaused
     this.linkage.tryRotatingLinkageInput();
     super.draw(renderer);
 
-    // if we have a selected rotary
     if (this.p0id) {
+      // TODO: draw rotary
       renderer.drawPoint(this.linkage.positions[this.p0id], {pointColor: 'red'});
     }
   }
@@ -67,13 +60,22 @@ class State10 extends BaseState { // initial unpaused
       case KEYS.s:
         this.linkage.changeSpeed(0.9, this.p0id);
         return this;
-        break;
       case KEYS.W:
       case KEYS.w:
         this.linkage.changeSpeed(1.1, this.p0id);
         return this;
       default:
-        return super.onKeyPress(key);
+        return this;
+    }
+  }
+
+  onKeyUp(key) {
+    switch (key) {
+      case KEYS.ESC:
+      case KEYS.SPACE:
+        return new State0(this.linkage);
+      default:
+        return this;
     }
   }
 }
@@ -250,7 +252,7 @@ class State8 extends PausedState { // rotary selected
 
   draw(renderer, mousePoint) {
     super.draw(renderer);
-    // draw rotary
+    // TODO: draw rotary
   }
 }
 
