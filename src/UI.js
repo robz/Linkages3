@@ -1,5 +1,5 @@
 var UIState = require('./UIState');
-var LinkageRenderer = require('../LinkageRenderer');
+var LinkageRenderer = require('./LinkageRenderer');
 
 class UI {
   constructor(canvasID, linkage) {
