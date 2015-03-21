@@ -37,7 +37,6 @@ class BaseState {
   onMouseDrag(point) {}
   onMouseDown() {}
   onMouseUp() {}
-
   onKeyPress(key) {}
   onKeyDown(key) {}
   onKeyUp(key) {}

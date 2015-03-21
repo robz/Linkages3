@@ -1,13 +1,33 @@
+/* @flow */
+'use strict';
+
 var UIState = require('./UIState');
 var LinkageRenderer = require('./LinkageRenderer');
+var Linkage = require('./Linkage');
+
+type Point = {x: number; y: number};
 
 class UI {
-  constructor(canvasID, linkage) {
-    this.renderer = new LinkageRenderer(canvasID);
+  renderer: LinkageRenderer;
+  state: UIState;
+
+  mousePoint: ?Point;
+  dragging: boolean;
+
+  hoverSegmentIDs: ?Array<string>;
+  hoverPointID: ?string;
+  hoverPoint: boolean;
+  hoverGround: boolean;
+  hoverRotary: boolean;
+
+  constructor(canvasID: string, linkage: Linkage) {
     linkage.calculatePositions();
+
+    this.renderer = new LinkageRenderer(canvasID);
     this.state = new UIState(linkage);
 
     this.mousePoint = null;
+    this.dragging = false;
 
     this.hoverSegmentIDs = null;
     this.hoverPointID = null;
@@ -24,13 +44,13 @@ class UI {
     doc.onmouseup = this.onMouseUp.bind(this);
   }
 
-  animate() {
+  animate(): void {
     this.state.linkage.calculatePositions();
     this.state.draw(this.renderer, this.mousePoint);
     window.requestAnimationFrame(this.animate.bind(this));
   }
 
-  onMouseDown(e) {
+  onMouseDown(e: Point): void {
     this.dragging = true;
     var newState = null;
 
@@ -43,7 +63,7 @@ class UI {
     this.state = newState ? newState : this.state;
   }
 
-  onMouseUp(e) {
+  onMouseUp(e: Point): void {
     this.dragging = false;
 
     var mousePoint = this.renderer.inverseTransform(e);
@@ -66,33 +86,35 @@ class UI {
     this.state = newState ? newState : this.state;
   }
 
-  onMouseMove(e) {
-    this.mousePoint = this.renderer.inverseTransform(e);
+  onMouseMove(e: Point): void {
+    var mousePoint = this.renderer.inverseTransform(e);
 
     if (this.dragging) {
-      var newState = this.state.onMouseDrag(this.mousePoint);
+      var newState = this.state.onMouseDrag(mousePoint);
       this.state = newState ? newState : this.state;
     } else {
-      this.setHovers(this.mousePoint);
+      this.setHovers(mousePoint);
     }
+
+    this.mousePoint = mousePoint;
   }
 
-  onKeyUp(e) {
+  onKeyUp(e: {which: number}): void {
     var newState = this.state.onKeyUp(e.which);
     this.state = newState ? newState : this.state;
   }
 
-  onKeyDown(e) {
+  onKeyDown(e: {which: number}): void {
     var newState = this.state.onKeyDown(e.which);
     this.state = newState ? newState : this.state;
   }
 
-  onKeyPress(e) {
+  onKeyPress(e: {which: number}): void {
     var newState = this.state.onKeyPress(e.which);
     this.state = newState ? newState : this.state;
   }
 
-  setHovers(currentPoint) {
+  setHovers(currentPoint: Point): void {
     this.hoverSegmentIDs = null;
     this.hoverPointID = null;
     this.hoverPoint = false;

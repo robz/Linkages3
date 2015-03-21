@@ -1,5 +1,4 @@
 /* @flow */
-
 'use strict';
 
 type OptionsType = {
@@ -28,7 +27,7 @@ function getOptions(opts?: ?OptionsType): OptionsType {
 
   opts.pointRadius = opts.pointRadius / SCALE;
   opts.lineWidth = opts.lineWidth / SCALE;
-  
+
   return opts;
 }
 
@@ -90,19 +89,19 @@ class CanvasRenderer {
     this.ctx.restore();
   }
 
-  drawSegment(p1: Point, p2: Point, options?: OptionsType) {
+  drawSegment(p1: Point, p2: Point, options: OptionsType) {
     this.drawLine(p1, p2, options);
     this.drawPoint(p1, options);
     this.drawPoint(p2, options);
   }
 
-  drawDirectedSegment(p1: Point, p2: Point, options?: OptionsType) {
+  drawDirectedSegment(p1: Point, p2: Point, options: OptionsType) {
     this.drawLine(p1, p2, options);
     this.drawPoint(p1, options);
   }
 
   drawLines(...args) {
-    var options = args.pop(); 
+    var options = args.pop();
 
     this.drawLine(args[0], args[1], options);
 
@@ -127,9 +126,9 @@ class LinkageRenderer extends CanvasRenderer {
       var p0 = positions[pointID];
       Object.keys(points[pointID]).forEach((pointID) => {
         var pi = positions[pointID];
-        this.drawLine(p0, pi); 
+        this.drawLine(p0, pi);
       });
-    }); 
+    });
 
     Object.keys(points).forEach((pointID) => {
       this.drawPoint(positions[pointID]);

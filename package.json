@@ -7,7 +7,7 @@
   },
   "scripts": {
     "build": "mkdir build 2> /dev/null; browserify src/main.js -t 6to5ify | uglifyjs -am > build/bundle.js",
-    "check": "flow check src --profile",
+    "check": "flow src",
     "test": "jest",
     "watch": "mkdir build 2> /dev/null; watchify src/main.js -t 6to5ify -o build/bundle.js -v -d"
   },

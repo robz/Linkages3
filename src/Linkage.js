@@ -1,21 +1,21 @@
 /* @flow */
-
 'use strict';
 
 var Geom = require('./GeometryUtils.js');
 
 type Point = {x: number; y: number};
 type LinkageSpecType = {
-  groundPoints: Object;
+  groundPoints: {[key:string]: ?Point};
   points: Object;
   extenders: Object;
+  rotaries: Object;
 };
 
 class Linkage {
   spec: LinkageSpecType;
   positions: {[key:string]: Point};
 
-  constructor(spec) {
+  constructor(spec: LinkageSpecType) {
     this.spec = spec;
     this.positions = {};
   }
@@ -32,7 +32,7 @@ class Linkage {
   }
 
   tryDraggingGroundPoint(
-    currentPoint: Point, 
+    currentPoint: Point,
     hoveredPointID: string
   ): boolean {
     var groundPoint = this.spec.groundPoints[hoveredPointID];
@@ -41,23 +41,26 @@ class Linkage {
       return false;
     }
 
+    var success = false;
+
     try {
       var {x: prevX, y: prevY} = groundPoint;
       groundPoint.x = currentPoint.x;
       groundPoint.y = currentPoint.y;
       this.calculatePositions();
-      return true;
+      success = true;
     } catch (e) {
       groundPoint.x = prevX;
       groundPoint.y = prevY;
       this.calculatePositions();
-    } 
+    }
 
-    return false;
+    return success;
   }
 
-  tryRotatingLinkageInput() {
+  tryRotatingLinkageInput(): boolean {
     var flag = true;
+
     Object.keys(this.spec.extenders).forEach((id) => {
       var rotaryInput = this.spec.extenders[id];
       try {
@@ -70,6 +73,7 @@ class Linkage {
         flag = false;
       }
     });
+
     return flag;
   }
 
@@ -85,7 +89,7 @@ class Linkage {
     } catch (e) {
       this._changeBarLength(oldLen, p0id, p1id);
       this.calculatePositions();
-    } 
+    }
   }
 
   _changeBarLength(len: number, p0id: string, p1id: string) {
@@ -99,7 +103,7 @@ class Linkage {
       ext0.len = len;
     } else if (ext1 && ext1.base === p0id) {
       ext1.len = len;
-    } 
+    }
   }
 
   _addSegment(
@@ -158,8 +162,8 @@ class Linkage {
     // there are two possible solutions to a triangle--so figure out which
     // is desired based on the closest calculated third point
     var res = Geom.calcPointFromTriangle(
-      position1, 
-      position2, 
+      position1,
+      position2,
       dist1To3,
       dist2To3
     );
@@ -181,14 +185,14 @@ class Linkage {
     var numPoints = Object.keys(this.spec.points).length;
     var groundID = 'p' + numPoints;
     var auxID = 'p' + (numPoints + 1);
-    
+
     this.spec.groundPoints[groundID] = {
       x: groundPoint.x,
       y: groundPoint.y,
     };
 
     var connectedPoint = this.positions[connectedID];
-    var distGroundToAux = Geom.euclid(groundPoint, auxPoint); 
+    var distGroundToAux = Geom.euclid(groundPoint, auxPoint);
     var distAuxToConnected = Geom.euclid(auxPoint, connectedPoint);
 
     this.spec.points[groundID] = {};
@@ -198,7 +202,7 @@ class Linkage {
 
     var res = Geom.calcPointFromTriangle(
       groundPoint,
-      connectedPoint, 
+      connectedPoint,
       distGroundToAux,
       distAuxToConnected
     );
@@ -268,8 +272,8 @@ class Linkage {
         if (groundPoints[id]) {
           this.positions[id] = groundPoints[id];
         } else if (
-          extenders[id] && 
-          this.positions[extenders[id].base] && 
+          extenders[id] &&
+          this.positions[extenders[id].base] &&
           this.positions[extenders[id].ref]
         ) {
           this.positions[id] = Geom.calcPointFromExtender(
@@ -283,7 +287,7 @@ class Linkage {
             adj => this.positions[adj]
           );
 
-          if (knownAdjacents.length >= 2) { 
+          if (knownAdjacents.length >= 2) {
             this.positions[id] = Geom.calcPointFromTriangle(
               this.positions[knownAdjacents[0]],
               this.positions[knownAdjacents[1]],
