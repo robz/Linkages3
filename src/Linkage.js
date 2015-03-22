@@ -20,6 +20,14 @@ class Linkage {
     this.positions = {};
   }
 
+  getPoint(id: ?string): Point {
+    if (!id) {
+      throw new Error('id must be defined');
+    }
+
+    return this.positions[id];
+  }
+
   changeSpeed(factor: number, id?: string) {
     if (!id) {
       Object.keys(this.spec.extenders).forEach((id) => {
@@ -33,8 +41,12 @@ class Linkage {
 
   tryDraggingGroundPoint(
     currentPoint: Point,
-    hoveredPointID: string
+    hoveredPointID?: string
   ): boolean {
+    if (!hoveredPointID) {
+      throw new Error('hoveredPointID must be defined');
+    }
+
     var groundPoint = this.spec.groundPoints[hoveredPointID];
 
     if (!groundPoint) {
@@ -77,9 +89,11 @@ class Linkage {
     return flag;
   }
 
-  tryChangingBarLength(lenChange: number, hoveredSegment: Array<{id: string}>) {
-    var p0id = hoveredSegment[0].id;
-    var p1id = hoveredSegment[1].id;
+  tryChangingBarLength(lenChange: number, p0id?: string, p1id?: string) {
+    if (!p0id || !p1id) {
+      throw new Error('p0id and p1id must be defined');
+    }
+
     var oldLen = this.spec.points[p0id][p1id].len;
     var newLen = oldLen + lenChange;
 

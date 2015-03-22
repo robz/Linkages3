@@ -11,11 +11,11 @@ class UI {
   renderer: LinkageRenderer;
   state: UIState;
 
-  mousePoint: ?Point;
+  mousePoint: Point;
   dragging: boolean;
 
   hoverSegmentIDs: ?Array<string>;
-  hoverPointID: ?string;
+  hoverPointID: string;
   hoverPoint: boolean;
   hoverGround: boolean;
   hoverRotary: boolean;
@@ -24,13 +24,13 @@ class UI {
     linkage.calculatePositions();
 
     this.renderer = new LinkageRenderer(canvasID);
-    this.state = new UIState(linkage);
+    this.state = UIState.getInitialState(linkage);
 
-    this.mousePoint = null;
+    this.mousePoint = {x:0, y:0};
     this.dragging = false;
 
     this.hoverSegmentIDs = null;
-    this.hoverPointID = null;
+    this.hoverPointID = '';
     this.hoverPoint = false;
     this.hoverGround = false;
     this.hoverRotary = false;
@@ -75,7 +75,7 @@ class UI {
 
     if (!newState) {
       if (this.hoverSegmentIDs) {
-        newState = this.state.onSegmentUp(...this.hoverSegmentIDs);
+        newState = this.state.onSegmentUp(this.hoverSegmentIDs[0], this.hoverSegmentIDs[1]);
       } else if (this.hoverPoint || this.hoverGround || this.hoverRotary) {
         newState = this.state.onPointUp(this.hoverPointID);
       } else {
@@ -116,7 +116,7 @@ class UI {
 
   setHovers(currentPoint: Point): void {
     this.hoverSegmentIDs = null;
-    this.hoverPointID = null;
+    this.hoverPointID = '';
     this.hoverPoint = false;
     this.hoverGround = false;
     this.hoverRotary = false;

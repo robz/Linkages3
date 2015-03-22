@@ -2,10 +2,10 @@
 'use strict';
 
 type OptionsType = {
-  pointColor: ?string;
-  lineColor: ?string;
-  pointRadius: ?number;
-  lineWidth: ?number;
+  pointColor?: string;
+  lineColor?: string;
+  pointRadius?: number;
+  lineWidth?: number;
 };
 
 type Point = {x: number; y: number};
@@ -17,7 +17,7 @@ var BACKGROUND_COLOR = 'white';
 var POINT_RADIUS = 4;
 var LINE_WIDTH = 4;
 
-function getOptions(opts?: ?OptionsType): OptionsType {
+function getOptions(opts: ?OptionsType): OptionsType {
   opts = {
     pointColor: (opts && opts.pointColor) ? opts.pointColor : POINT_COLOR,
     lineColor: (opts && opts.lineColor) ? opts.lineColor : LINE_COLOR,
@@ -36,7 +36,7 @@ class CanvasRenderer {
   _width: number;
   _height: number;
 
-  constructor(canvasID: string, options: ?OptionsType) {
+  constructor(canvasID: string) {
     var canvas: any = document.getElementById(canvasID);
     this.ctx = canvas.getContext('2d');
 
@@ -60,7 +60,7 @@ class CanvasRenderer {
     return {x, y};
   }
 
-  drawPoint({x, y}: Point, options?: OptionsType) {
+  drawPoint({x, y}: Point, options?: ?OptionsType) {
     var {pointColor, pointRadius} = getOptions(options);
     this.ctx.save();
     this.ctx.beginPath();
@@ -70,7 +70,7 @@ class CanvasRenderer {
     this.ctx.restore();
   }
 
-  drawLine(p1: Point, p2: Point, options?: OptionsType) {
+  drawLine(p1: Point, p2: Point, options?: ?OptionsType) {
     var {lineColor, lineWidth} = getOptions(options);
     this.ctx.save();
     this.ctx.beginPath();
@@ -89,31 +89,23 @@ class CanvasRenderer {
     this.ctx.restore();
   }
 
-  drawSegment(p1: Point, p2: Point, options: OptionsType) {
-    this.drawLine(p1, p2, options);
-    this.drawPoint(p1, options);
-    this.drawPoint(p2, options);
-  }
-
-  drawDirectedSegment(p1: Point, p2: Point, options: OptionsType) {
-    this.drawLine(p1, p2, options);
-    this.drawPoint(p1, options);
-  }
-
-  drawLines(...args) {
-    var options = args.pop();
-
-    this.drawLine(args[0], args[1], options);
-
-    if (args.length === 3) {
-      this.drawLine(args[1], args[2], options);
+  // TODO how to get rid of any here?
+  drawLines(points: Array<any>, options?: OptionsType) {
+    if (!points[0] || !points[1]) {
+      throw new Error('first two points must be defined');
     }
 
-    this.drawPoint(args[0], options);
-    this.drawPoint(args[1], options);
+    this.drawLine(points[0], points[1], options);
 
-    if (args.length === 3) {
-      this.drawPoint(args[2], options);
+    if (points[2]) {
+      this.drawLine(points[1], points[2], options);
+    }
+
+    this.drawPoint(points[0], options);
+    this.drawPoint(points[1], options);
+
+    if (points[2]) {
+      this.drawPoint(points[2], options);
     }
   }
 }
