@@ -89,7 +89,7 @@ class CanvasRenderer {
     this.ctx.restore();
   }
 
-  // TODO how to get rid of any here?
+  // TODO how to get rid of any type here?
   drawLines(points: Array<any>, options?: OptionsType) {
     if (!points[0] || !points[1]) {
       throw new Error('first two points must be defined');

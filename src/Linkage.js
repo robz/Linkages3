@@ -20,6 +20,39 @@ class Linkage {
     this.positions = {};
   }
 
+  tryRemovingPoint(id: ?string): boolean {
+    if (!id) {
+      throw new Error('id must be defined');
+    }
+
+    // don't allow ground points for now
+    if (this.spec.groundPoints[id]) {
+      return false;
+    }
+
+    // remove point from spec
+    var newSpec = JSON.parse(JSON.stringify(this.spec));
+    var adjacentPoints = Object.keys(newSpec.points[id]);
+    adjacentPoints.forEach(adjID => {
+      delete newSpec.points[adjID][id];
+      if (Object.keys(newSpec.points[adjID]).length === 0) {
+        delete newSpec.groundPoints[adjID];
+        delete newSpec.points[adjID];
+      }
+    });
+    delete newSpec.points[id];
+
+    try {
+      var newPositions = this._calculatePositionsAux(newSpec);
+    } catch (e) {
+      return false;
+    }
+
+    this.positions = newPositions;
+    this.spec = newSpec;
+    return true;
+  }
+
   getPoint(id: ?string): Point {
     if (!id) {
       throw new Error('id must be defined');
@@ -39,35 +72,34 @@ class Linkage {
     }
   }
 
-  tryDraggingGroundPoint(
-    currentPoint: Point,
-    hoveredPointID?: string
+  tryMovingGroundPoints(
+    points: Array<{point: Point; id: string}>
   ): boolean {
-    if (!hoveredPointID) {
-      throw new Error('hoveredPointID must be defined');
-    }
+    var prevPoints = {};
 
-    var groundPoint = this.spec.groundPoints[hoveredPointID];
+    // move the ground points
+    points.forEach(({point, id}) => {
+      var groundPoint = this.spec.groundPoints[id];
 
-    if (!groundPoint) {
-      return false;
-    }
+      if (!groundPoint) {
+        throw new Error(`ground point ${id} doesn't exist`);
+      }
 
-    var success = false;
-
-    try {
       var {x: prevX, y: prevY} = groundPoint;
-      groundPoint.x = currentPoint.x;
-      groundPoint.y = currentPoint.y;
-      this.calculatePositions();
-      success = true;
-    } catch (e) {
-      groundPoint.x = prevX;
-      groundPoint.y = prevY;
+      groundPoint.x = point.x;
+      groundPoint.y = point.y;
+      prevPoints[id] = {x: prevX, y: prevY};
+    });
+
+    if (!this.calculatePositions()) {
+      // revert if it failed
+      points.forEach(({point, id}) => {
+        var groundPoint = this.spec.groundPoints[id];
+        groundPoint.x = prevPoints[id].x;
+        groundPoint.y = prevPoints[id].y;
+      });
       this.calculatePositions();
     }
-
-    return success;
   }
 
   tryRotatingLinkageInput(): boolean {
@@ -75,10 +107,8 @@ class Linkage {
 
     Object.keys(this.spec.extenders).forEach((id) => {
       var rotaryInput = this.spec.extenders[id];
-      try {
-        rotaryInput.angle += rotaryInput.speed;
-        this.calculatePositions();
-      } catch (e) {
+      rotaryInput.angle += rotaryInput.speed;
+      if (!this.calculatePositions()) {
         this.changeSpeed(-1, id.base);
         rotaryInput.angle += rotaryInput.speed;
         this.calculatePositions();
@@ -274,46 +304,64 @@ class Linkage {
   }
 
   calculatePositions() {
-    var {points, extenders, groundPoints} = this.spec;
-    this.positions = {};
+    try {
+      var positions = this._calculatePositionsAux(this.spec);
+    } catch (e) {
+      return false;
+    }
+
+    this.positions = positions;
+    return true;
+  }
+
+  _calculatePositionsAux(spec) {
+    var {points, extenders, groundPoints} = spec;
+    var positions = {};
 
     var idList = Object.keys(points);
     var oldLength;
 
     do {
       oldLength = idList.length;
-      idList = idList.filter((id) => {
+      idList = idList.filter(id => {
         if (groundPoints[id]) {
-          this.positions[id] = groundPoints[id];
+          positions[id] = groundPoints[id];
         } else if (
           extenders[id] &&
-          this.positions[extenders[id].base] &&
-          this.positions[extenders[id].ref]
+          positions[extenders[id].base] &&
+          positions[extenders[id].ref]
         ) {
-          this.positions[id] = Geom.calcPointFromExtender(
-            this.positions[extenders[id].base],
-            this.positions[extenders[id].ref],
+          positions[id] = Geom.calcPointFromExtender(
+            positions[extenders[id].base],
+            positions[extenders[id].ref],
             extenders[id].len,
             extenders[id].angle
           );
         } else {
           var knownAdjacents = Object.keys(points[id]).filter(
-            adj => this.positions[adj]
+            adj => positions[adj]
           );
 
           if (knownAdjacents.length >= 2) {
-            this.positions[id] = Geom.calcPointFromTriangle(
-              this.positions[knownAdjacents[0]],
-              this.positions[knownAdjacents[1]],
+            positions[id] = Geom.calcPointFromTriangle(
+              positions[knownAdjacents[0]],
+              positions[knownAdjacents[1]],
               points[id][knownAdjacents[0]].len,
               points[id][knownAdjacents[1]].len
             ).sol1;
           }
         }
 
-        return !this.positions[id];
+        return !positions[id];
       });
     } while (idList.length > 0 && idList.length < oldLength);
+
+    if (idList.length > 0) {
+      throw new Error('failed to compute all points');
+
+    }
+
+    return positions;
   }
 }
 

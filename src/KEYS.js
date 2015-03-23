@@ -1,4 +1,6 @@
 module.exports = {
+  D: 68,
+  d: 100,
   S: 83,
   s: 115,
   W: 87,

@@ -222,7 +222,7 @@ class State3 extends PausedState { // ground down
 
   onMouseDrag(point: Point): ?BaseState {
     this.dragged = true;
-    this.linkage.tryDraggingGroundPoint(point, this.p0id);
+    this.linkage.tryMovingGroundPoints([{point, id:this.p0id}]);
     return this;
   }
 }
@@ -234,6 +234,20 @@ class State4 extends PausedState { // point1
 
   onCanvasUp(pointA: Point): ?BaseState {
     return new State6(this.linkage, {p0id: this.p0id, pointA})
+  }
+
+  onKeyUp(key: number): ?BaseState {
+    switch (key) {
+      case KEYS.D:
+      case KEYS.d:
+        if (this.linkage.tryRemovingPoint(this.p0id)) {
+          return new State0(this.linkage);
+        } else {
+          return this;
+        }
+      default:
+        return super.onKeyUp(key);
+    }
   }
 
   draw(renderer: LinkageRenderer, mousePoint: Point): void {
@@ -302,7 +316,22 @@ class State7 extends PausedState { // rotary down
 
   onMouseDrag(point: Point): ?BaseState {
     this.dragged = true;
-    this.linkage.tryDraggingGroundPoint(point, this.p0id);
+
+    var {rotaries, extenders, groundPoints} = this.linkage.spec;
+
+    var {x: prevX, y: prevY} = groundPoints[this.p0id];
+    var refID = extenders[rotaries[this.p0id]].ref;
+    var refCurPoint = groundPoints[refID];
+    var refNextPoint = {
+      x: refCurPoint.x + point.x - prevX,
+      y: refCurPoint.y + point.y - prevY,
+    };
+
+    this.linkage.tryMovingGroundPoints([
+      {point, id: this.p0id},
+      {point: refNextPoint, id: refID},
+    ]);
+
     return this;
   }
 }
