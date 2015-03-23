@@ -127,10 +127,8 @@ class Linkage {
     var oldLen = this.spec.points[p0id][p1id].len;
     var newLen = oldLen + lenChange;
 
-    try {
-      this._changeBarLength(newLen, p0id, p1id);
-      this.calculatePositions();
-    } catch (e) {
+    this._changeBarLength(newLen, p0id, p1id);
+    if (!this.calculatePositions()) {
       this._changeBarLength(oldLen, p0id, p1id);
       this.calculatePositions();
     }
