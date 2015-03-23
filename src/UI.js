@@ -30,7 +30,7 @@ class UI {
     this.dragging = false;
 
     this.hoverSegmentIDs = null;
-    this.hoverPointID = '';
+    this.hoverPointID = ''; // ugh flow
     this.hoverPoint = false;
     this.hoverGround = false;
     this.hoverRotary = false;

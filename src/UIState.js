@@ -1,4 +1,11 @@
-/*@flow*/
+/*
+ * This file contains all the UI state behaviors. Unfortunately, since state
+ * transitions are inheritly circular, this file cannot easily be broken up
+ * into separate files because the CommonJS require system has zero tolerance
+ * for circular references.
+ *
+ * @flow
+ */
 'use strict';
 
 var Linkage = require('./Linkage');
@@ -8,13 +15,13 @@ var KEYS = require('./KEYS');
 
 type Point = {x: number; y: number};
 type StateSpec = {
-  p0id: ?string;
-  p1id: ?string;
-  pointA: ?Point;
-  pointB: ?Point;
+  p0id?: string;
+  p1id?: string;
+  pointA?: Point;
+  pointB?: Point;
 };
 
-var options = {
+var previewOptions = {
   lineColor: 'pink',
   pointColor: 'red',
 };
@@ -76,7 +83,6 @@ class UnpausedState extends BaseState {  // initial unpaused
 
   onKeyUp(key: number): ?BaseState {
     switch (key) {
-      case KEYS.ESC:
       case KEYS.SPACE:
         return new State0(this.linkage);
       default:
@@ -116,7 +122,7 @@ class State10 extends UnpausedState { // rotary selected moving
         this.linkage.getPoint(this.p0id),
         this.linkage.getPoint(p2id),
       ],
-      options
+      previewOptions
     );
   }
 
@@ -145,7 +151,7 @@ var MAX_TRACE_POINTS = 100;
 class State12 extends UnpausedState { // trace point
   tracePoints: Array<Point>;
 
-  constructor(linkage: Linkage, spec?: ?StateSpec) {
+  constructor(linkage: Linkage, spec: StateSpec) {
     super(linkage, spec);
     this.tracePoints = [];
   }
@@ -163,8 +169,8 @@ class State12 extends UnpausedState { // trace point
       this.tracePoints.shift();
     }
 
-    renderer.drawLines2(this.tracePoints, options);
-    renderer.drawPoint(curPoint, options);
+    renderer.drawLines2(this.tracePoints, previewOptions);
+    renderer.drawPoint(curPoint, previewOptions);
   }
 }
 
@@ -173,6 +179,8 @@ class PausedState extends BaseState {
     switch (key) {
       case KEYS.SPACE:
         return new UnpausedState(this.linkage);
+      case KEYS.ESC:
+        return new State0(this.linkage);
       default:
         return this;
     }
@@ -236,7 +244,7 @@ class State11 extends PausedState { // rotary hover
         mousePoint,
         {x: mousePoint.x + 1, y: mousePoint.y},
       ],
-      options
+      previewOptions
     );
   }
 }
@@ -248,7 +256,7 @@ class State1 extends PausedState { // canvas1
 
   draw(renderer: LinkageRenderer, mousePoint: Point): void {
     super.draw(renderer, mousePoint);
-    renderer.drawLines([this.pointA, mousePoint], options);
+    renderer.drawLines([this.pointA, mousePoint], previewOptions);
   }
 }
 
@@ -260,8 +268,8 @@ class State2 extends PausedState { // canvas1 + canvas2
 
   draw(renderer: LinkageRenderer, mousePoint: Point): void {
     super.draw(renderer, mousePoint);
-    renderer.drawLines([this.pointA, this.pointB], options);
-    renderer.drawLines([this.pointB, mousePoint], options);
+    renderer.drawLines([this.pointA, this.pointB], previewOptions);
+    renderer.drawLines([this.pointB, mousePoint], previewOptions);
   }
 }
 
@@ -313,7 +321,7 @@ class State4 extends PausedState { // point1
         this.linkage.getPoint(this.p0id),
         mousePoint,
       ],
-      options
+      previewOptions
     );
   }
 }
@@ -329,10 +337,10 @@ class State5 extends PausedState { // point2
     renderer.drawLines(
       [
         this.linkage.getPoint(this.p0id),
-        this.linkage.getPoint(this.p1id),
         mousePoint,
+        this.linkage.getPoint(this.p1id),
       ],
-      options
+      previewOptions
     );
   }
 }
@@ -356,7 +364,7 @@ class State6 extends PausedState { // point1 + canvas1
         this.pointA,
         mousePoint,
       ],
-      options
+      previewOptions
     );
   }
 }
@@ -419,7 +427,7 @@ class State8 extends PausedState { // rotary selected
         this.linkage.getPoint(this.p0id),
         this.linkage.getPoint(p2id),
       ],
-      options
+      previewOptions
     );
   }
 }
@@ -453,7 +461,7 @@ class State9 extends PausedState { // segment selected
         mousePoint,
         this.linkage.getPoint(this.p1id),
       ],
-      options
+      previewOptions
     );
   }
 }
