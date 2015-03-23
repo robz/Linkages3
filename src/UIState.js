@@ -345,6 +345,13 @@ class State8 extends PausedState { // rotary selected
     switch (key) {
       case KEYS.SPACE:
         return new State10(this.linkage, {p0id: this.p0id});
+      case KEYS.d:
+      case KEYS.D:
+        if (this.linkage.tryRemovingPoint(this.p0id)) {
+          return new State0(this.linkage);
+        } else {
+          return this;
+        }
       default:
         return super.onKeyUp(key);
     }

@@ -5,7 +5,7 @@ var Geom = require('./GeometryUtils.js');
 
 type Point = {x: number; y: number};
 type LinkageSpecType = {
-  groundPoints: {[key:string]: ?Point};
+  groundPoints: {[key:string]: Point};
   points: Object;
   extenders: Object;
   rotaries: Object;
@@ -25,11 +25,6 @@ class Linkage {
       throw new Error('id must be defined');
     }
 
-    // don't allow ground points for now
-    if (this.spec.groundPoints[id]) {
-      return false;
-    }
-
     // remove point from spec
     var newSpec = JSON.parse(JSON.stringify(this.spec));
     var adjacentPoints = Object.keys(newSpec.points[id]);
@@ -38,9 +33,14 @@ class Linkage {
       if (Object.keys(newSpec.points[adjID]).length === 0) {
         delete newSpec.groundPoints[adjID];
         delete newSpec.points[adjID];
+        delete newSpec.rotaries[adjID];
+        delete newSpec.extenders[adjID];
       }
     });
+    delete newSpec.groundPoints[id];
     delete newSpec.points[id];
+    delete newSpec.rotaries[id];
+    delete newSpec.extenders[id];
 
     try {
       var newPositions = this._calculatePositionsAux(newSpec);
@@ -301,7 +301,7 @@ class Linkage {
     return segments;
   }
 
-  calculatePositions() {
+  calculatePositions(): boolean {
     try {
       var positions = this._calculatePositionsAux(this.spec);
     } catch (e) {
@@ -312,7 +312,7 @@ class Linkage {
     return true;
   }
 
-  _calculatePositionsAux(spec) {
+  _calculatePositionsAux(spec: LinkageSpecType): {[key:string]: Point} {
     var {points, extenders, groundPoints} = spec;
     var positions = {};
 
@@ -356,7 +356,6 @@ class Linkage {
 
     if (idList.length > 0) {
       throw new Error('failed to compute all points');
-
     }
 
     return positions;
