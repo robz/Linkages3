@@ -17,19 +17,19 @@ Then open `index.html` with a browser (I've only tested in the lastest versions 
 Here are the controls so far:
 * Press `space` to toggle pause
 * When paused:
-  * Click and drag a ground point to move it around
-  * Some ground points are used as references for rotary inputs, so clicking and dragging them will change the phase the input
-  * Hover over any bar*, and press `w` or `s` to change its length
-  * To add an additional ground point connected to the linkage, click twice at different places on the background, then click on a point on the linkage
-  * To add additional bars, click a bar, or on any two points on the linkage, then click once on the background
+  * Click and drag a ground vertex to move it around
+  * Some ground verticies are used as references for rotary inputs, so dragging them will change the phase the input
+  * Hover over any bar*, then press `w` or `s` to change its length
+  * To add an additional ground vertex connected to the linkage, click twice at different places on the background, then click on a vertex on the linkage
+  * To add additional bars, click a bar, or on any two verticies of the linkage, then click once on the background
   * To add a new rotary input, hold down `r` and then click somewhere on the background
-  * To select a rotary input, click the point that the bar is rotating around
-  * To delete parts of the linkage, click on a point, then press `d`. Note that this only works if other parts of the linkage don't depend on the segments attached to the point.
-  * To trace the path that a point will follow, click on a point, then press `space` to unpause
+  * To delete parts of the linkage, click on a vertex, then press `d`. Note that this only works if other parts of the linkage don't depend on the bars connected to the vertex.
+  * To trace the path that a vertex follows, click on a vertex, then press `space` to unpause
+  * To select a rotary input, click the vertex that a bar is rotating around
 * When unpaused:
   * Press `w` or `s` to increase or decrease the speed of a selected rotary input, or `t` to reverse its direction. If a rotary input is not selected, these changes in speed will apply to all of them.
 
-\* any bar except ones between rotary inputs and reference points
+\* any bar except one between a rotary input and its reference vertex
 
 Rotary inputs will automatically reverse if they're about to put the linakge into an impossible configuration.
 
