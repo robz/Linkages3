@@ -8,4 +8,6 @@ module.exports = {
   SPACE: 32,
   R: 82,
   r: 120,
+  T: 84,
+  t: 116,
 };

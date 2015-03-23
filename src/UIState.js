@@ -98,6 +98,10 @@ class State10 extends BaseState { // initial unpaused
       case KEYS.w:
         this.linkage.changeSpeed(1.1, this.p0id);
         return this;
+      case KEYS.T:
+      case KEYS.t:
+        this.linkage.changeSpeed(-1, this.p0id);
+        return this;
       default:
         return this;
     }
