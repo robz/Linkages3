@@ -21,7 +21,7 @@ var options = {
 
 class BaseState {
   static getInitialState(linkage: Linkage) {
-    return new State10(linkage);
+    return new UnpausedState(linkage);
   }
 
   linkage: Linkage;
@@ -68,24 +68,56 @@ class BaseState {
   onCanvasUp(pointA: Point): ?BaseState {}
 }
 
-class State10 extends BaseState { // initial unpaused
+class UnpausedState extends BaseState {  // initial unpaused
   draw(renderer: LinkageRenderer, mousePoint: Point): void {
     this.linkage.tryRotatingLinkageInput();
     super.draw(renderer, mousePoint);
+  }
 
-    // draw rotary if selected
-    if (this.p0id) {
-      var p1id = this.linkage.spec.rotaries[this.p0id];
-      var p2id = this.linkage.spec.extenders[p1id].ref;
-      renderer.drawLines(
-        [
-          this.linkage.getPoint(p1id),
-          this.linkage.getPoint(this.p0id),
-          this.linkage.getPoint(p2id),
-        ],
-        options
-      );
+  onKeyUp(key: number): ?BaseState {
+    switch (key) {
+      case KEYS.ESC:
+      case KEYS.SPACE:
+        return new State0(this.linkage);
+      default:
+        return this;
     }
+  }
+
+  onKeyPress(key: number): ?BaseState {
+    switch (key) {
+      case KEYS.S:
+      case KEYS.s:
+        this.linkage.changeSpeed(0.9);
+        return this;
+      case KEYS.W:
+      case KEYS.w:
+        this.linkage.changeSpeed(1.1);
+        return this;
+      case KEYS.T:
+      case KEYS.t:
+        this.linkage.changeSpeed(-1);
+        return this;
+      default:
+        return this;
+    }
+  }
+}
+
+class State10 extends UnpausedState { // rotary selected moving
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+
+    var p1id = this.linkage.spec.rotaries[this.p0id];
+    var p2id = this.linkage.spec.extenders[p1id].ref;
+    renderer.drawLines(
+      [
+        this.linkage.getPoint(p1id),
+        this.linkage.getPoint(this.p0id),
+        this.linkage.getPoint(p2id),
+      ],
+      options
+    );
   }
 
   onKeyPress(key: number): ?BaseState {
@@ -106,15 +138,33 @@ class State10 extends BaseState { // initial unpaused
         return this;
     }
   }
+}
 
-  onKeyUp(key: number): ?BaseState {
-    switch (key) {
-      case KEYS.ESC:
-      case KEYS.SPACE:
-        return new State0(this.linkage);
-      default:
-        return this;
+var MAX_TRACE_POINTS = 100;
+
+class State12 extends UnpausedState { // trace point
+  tracePoints: Array<Point>;
+
+  constructor(linkage: Linkage, spec?: ?StateSpec) {
+    super(linkage, spec);
+    this.tracePoints = [];
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+
+    // record the current position
+    var curPoint = this.linkage.positions[this.p0id];
+    this.tracePoints.push({
+      x: curPoint.x,
+      y: curPoint.y,
+    });
+    if (this.tracePoints.length > MAX_TRACE_POINTS) {
+      this.tracePoints.shift();
     }
+
+    renderer.drawLines2(this.tracePoints, options);
+    renderer.drawPoint(curPoint, options);
   }
 }
 
@@ -122,7 +172,7 @@ class PausedState extends BaseState {
   onKeyUp(key: number): ?BaseState {
     switch (key) {
       case KEYS.SPACE:
-        return new State10(this.linkage);
+        return new UnpausedState(this.linkage);
       default:
         return this;
     }
@@ -161,7 +211,7 @@ class State0 extends PausedState { // initial paused
   }
 }
 
-class State11 extends PausedState {
+class State11 extends PausedState { // rotary hover
   onKeyUp(key: number): ?BaseState {
     switch (key) {
       case KEYS.R:
@@ -249,6 +299,8 @@ class State4 extends PausedState { // point1
         } else {
           return this;
         }
+      case KEYS.SPACE:
+        return new State12(this.linkage, {p0id: this.p0id});
       default:
         return super.onKeyUp(key);
     }

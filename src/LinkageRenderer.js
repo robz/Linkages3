@@ -60,25 +60,33 @@ class CanvasRenderer {
     return {x, y};
   }
 
-  drawPoint({x, y}: Point, options?: ?OptionsType) {
-    var {pointColor, pointRadius} = getOptions(options);
-    this.ctx.save();
+  drawPointAux({x, y}: Point, pointRadius) {
     this.ctx.beginPath();
     this.ctx.arc(x, y, pointRadius, 0, 2 * Math.PI, true);
-    this.ctx.fillStyle = pointColor;
     this.ctx.fill();
+  }
+
+  drawPoint(point: Point, options?: ?OptionsType) {
+    var {pointColor, pointRadius} = getOptions(options);
+    this.ctx.save();
+    this.ctx.fillStyle = pointColor;
+    this.drawPointAux(point, pointRadius);
     this.ctx.restore();
+  }
+
+  drawLineAux(p1: Point, p2: Point) {
+    this.ctx.beginPath();
+    this.ctx.moveTo(p1.x, p1.y);
+    this.ctx.lineTo(p2.x, p2.y);
+    this.ctx.stroke();
   }
 
   drawLine(p1: Point, p2: Point, options?: ?OptionsType) {
     var {lineColor, lineWidth} = getOptions(options);
     this.ctx.save();
-    this.ctx.beginPath();
-    this.ctx.moveTo(p1.x, p1.y);
-    this.ctx.lineTo(p2.x, p2.y);
     this.ctx.strokeStyle = lineColor;
     this.ctx.lineWidth = lineWidth;
-    this.ctx.stroke();
+    this.drawLineAux(p1, p2);
     this.ctx.restore();
   }
 
@@ -107,6 +115,28 @@ class CanvasRenderer {
     if (points[2]) {
       this.drawPoint(points[2], options);
     }
+  }
+
+  drawLines2(points: Array<Point>, options?: OptionsType) {
+    if (points.length === 0) {
+      return;
+    }
+
+    var {lineColor, lineWidth} = getOptions(options);
+    this.ctx.save();
+    this.ctx.strokeStyle = lineColor;
+    this.ctx.lineWidth = lineWidth;
+
+    this.ctx.beginPath();
+    this.ctx.moveTo(points[0].x, points[0].y);
+    points.forEach((point, i) => {
+      if (i !== 0) {
+        this.ctx.lineTo(point.x, point.y);
+      }
+    });
+    this.ctx.stroke();
+
+    this.ctx.restore();
   }
 }
 

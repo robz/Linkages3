@@ -20,27 +20,28 @@ class Linkage {
     this.positions = {};
   }
 
+  _deletePointFromSpec(spec: LinkageSpecType, id: string): void {
+    delete spec.groundPoints[id];
+    delete spec.points[id];
+    delete spec.rotaries[id];
+    delete spec.extenders[id];
+  }
+
   tryRemovingPoint(id: ?string): boolean {
     if (!id) {
       throw new Error('id must be defined');
     }
 
-    // remove point from spec
+    // remove point from spec, all adjacents that are not connected to anything
     var newSpec = JSON.parse(JSON.stringify(this.spec));
     var adjacentPoints = Object.keys(newSpec.points[id]);
     adjacentPoints.forEach(adjID => {
       delete newSpec.points[adjID][id];
       if (Object.keys(newSpec.points[adjID]).length === 0) {
-        delete newSpec.groundPoints[adjID];
-        delete newSpec.points[adjID];
-        delete newSpec.rotaries[adjID];
-        delete newSpec.extenders[adjID];
+        this._deletePointFromSpec(newSpec, adjID);
       }
     });
-    delete newSpec.groundPoints[id];
-    delete newSpec.points[id];
-    delete newSpec.rotaries[id];
-    delete newSpec.extenders[id];
+    this._deletePointFromSpec(newSpec, id);
 
     try {
       var newPositions = this._calculatePositionsAux(newSpec);
