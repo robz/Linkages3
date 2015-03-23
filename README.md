@@ -24,10 +24,10 @@ Here are the controls so far:
   * To add additional bars, click a bar, or on any two points on the linkage, then click once on the background
   * To add a new rotary input, hold down `r` and then click somewhere on the background
   * To select a rotary input, click the point that the bar is rotating around
+  * To delete parts of the linkage, click on a point, then press `d`. Note that this only works if other parts of the linkage don't depend on the segments attached to the point.
+  * To trace the path that a point will follow, click on a point, then press `space` to unpause
 * When unpaused:
   * Press `w` or `s` to increase or decrease the speed of a selected rotary input, or `t` to reverse its direction. If a rotary input is not selected, these changes in speed will apply to all of them.
-  * To parts of the linkage, click on a point, then press `d`. Note that this only work if other parts of the linkage don't depend on the segments attached to the point.
-  * To trace a point, click on the point, then press `space` to unpause
 
 \* any bar except ones between rotary inputs and reference points
 
