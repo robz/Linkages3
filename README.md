@@ -1,6 +1,8 @@
 # Linkage Editor
 This is a UI for making N-bar linkage systems with one degree of freedom and any number of rotary inputs. 
 
+[![IMAGE ALT TEXT HERE](http://img.youtube.com/vi/uPog68fuVm4/0.jpg)](http://www.youtube.com/watch?v=uPog68fuVm4)
+
 To try it out, first install [npm](https://www.npmjs.com/), clone this repository, then run:
 
 ```
