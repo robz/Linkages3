@@ -1,6 +1,6 @@
 /*
  * This file contains all the UI state behaviors. Unfortunately, since state
- * transitions are inheritly circular, this file cannot easily be broken up
+ * transitions are inherently circular, this file cannot easily be broken up
  * into separate files because the CommonJS require system has zero tolerance
  * for circular references.
  *
@@ -251,12 +251,35 @@ class State11 extends PausedState { // rotary hover
 
 class State1 extends PausedState { // canvas1
   onCanvasUp(pointB: Point): ?BaseState {
-    return new State2(this.linkage, {pointA: this.pointA, pointB})
+    return new State2(this.linkage, {pointA: this.pointA, pointB});
+  }
+
+  onAnyPointUp(p0id: string): ?BaseState {
+    return new State13(this.linkage, {pointA: this.pointA, p0id});
   }
 
   draw(renderer: LinkageRenderer, mousePoint: Point): void {
     super.draw(renderer, mousePoint);
     renderer.drawLines([this.pointA, mousePoint], previewOptions);
+  }
+}
+
+class State13 extends PausedState { // canvas then point
+  onCanvasUp(pointB: Point): ?BaseState {
+    this.linkage.addGroundSegment(this.pointA, pointB, this.p0id);
+    return new State0(this.linkage);
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+    renderer.drawLines(
+      [
+        this.pointA,
+        mousePoint,
+        this.linkage.getPoint(this.p0id),
+      ],
+      previewOptions
+    );
   }
 }
 
