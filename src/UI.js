@@ -5,6 +5,10 @@ var UIState = require('./UIState');
 var LinkageRenderer = require('./LinkageRenderer');
 var Linkage = require('./Linkage');
 
+var euclid = require('./GeometryUtils').euclid;
+
+var MIN_DIST = 0.5;
+
 type Point = {x: number; y: number};
 
 class UI {
@@ -20,6 +24,8 @@ class UI {
   hoverGround: boolean;
   hoverRotary: boolean;
 
+  prevClickPoint: Point;
+
   constructor(canvasID: string, linkage: Linkage) {
     linkage.calculatePositions();
 
@@ -34,6 +40,8 @@ class UI {
     this.hoverPoint = false;
     this.hoverGround = false;
     this.hoverRotary = false;
+
+    this.prevClickPoint = null;
 
     var doc: any = document;
     doc.onkeyup = this.onKeyUp.bind(this);
@@ -67,6 +75,15 @@ class UI {
     this.dragging = false;
 
     var mousePoint = this.renderer.inverseTransform(e);
+
+    if (this.prevClickPoint) {
+      if (euclid(this.prevClickPoint, mousePoint) < MIN_DIST) {
+        return;
+      }
+    }
+
+    this.prevClickPoint = mousePoint;
+
     var newState = this.state.onMouseUp(mousePoint);
 
     if (!newState && this.hoverPointID) {
