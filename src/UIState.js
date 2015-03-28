@@ -1,8 +1,10 @@
 /*
- * This file contains all the UI state behaviors. Unfortunately, since state
- * transitions are inherently circular, this file cannot easily be broken up
- * into separate files because the CommonJS require system has zero tolerance
- * for circular references.
+ * This file contains all the UI state transitions and behaviors. Unfortunately,
+ * since state transitions are inherently circular, this file cannot easily be
+ * broken up into separate files because the CommonJS require system has zero
+ * tolerance for circular references. To solve this, we'd need to add our own
+ * require or registrar system on top of CommonJS. I'll tackle that when this
+ * file reaches 1000 lines or so.
  *
  * @flow
  */
@@ -12,6 +14,8 @@ var Linkage = require('./Linkage');
 var LinkageRenderer = require('./LinkageRenderer');
 
 var KEYS = require('./KEYS');
+
+var MAX_TRACE_POINTS = 100;
 
 type Point = {x: number; y: number};
 type StateSpec = {
@@ -145,8 +149,6 @@ class State10 extends UnpausedState { // rotary selected moving
     }
   }
 }
-
-var MAX_TRACE_POINTS = 100;
 
 class State12 extends UnpausedState { // trace point
   tracePoints: Array<Point>;
