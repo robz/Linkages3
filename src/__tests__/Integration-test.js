@@ -7,48 +7,41 @@ var fourBarFinalSpec = {"points":{"p0":{"p1":{"len":1}},"p1":{"p0":{"len":1},"p2
 var fourBarEventLog = [{"handlerName":"onMouseMove","eventData":{"x":31.7,"y":14.35}},{"handlerName":"onMouseMove","eventData":{"x":31.7,"y":14.35}},{"handlerName":"onMouseMove","eventData":{"x":28.2,"y":14.35}},{"handlerName":"onMouseMove","eventData":{"x":26.1,"y":14.55}},{"handlerName":"onMouseMove","eventData":{"x":23.8,"y":15.15}},{"handlerName":"onMouseMove","eventData":{"x":21.7,"y":15.55}},{"handlerName":"onMouseMove","eventData":{"x":20.6,"y":15.85}},{"handlerName":"onMouseMove","eventData":{"x":19.4,"y":16.05}},{"handlerName":"onMouseMove","eventData":{"x":18.6,"y":16.15}},{"handlerName":"onMouseMove","eventData":{"x":18,"y":16.15}},{"handlerName":"onMouseMove","eventData":{"x":17.3,"y":16.15}},{"handlerName":"onMouseMove","eventData":{"x":16.6,"y":15.65}},{"handlerName":"onMouseMove","eventData":{"x":15.8,"y":15.05}},{"handlerName":"onMouseMove","eventData":{"x":14.3,"y":14.05}},{"handlerName":"onMouseMove","eventData":{"x":13.3,"y":13.15}},{"handlerName":"onMouseMove","eventData":{"x":11.3,"y":11.45}},{"handlerName":"onMouseMove","eventData":{"x":9.8,"y":10.25}},{"handlerName":"onMouseMove","eventData":{"x":8.2,"y":9.15}},{"handlerName":"onMouseMove","eventData":{"x":6.7,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":5.6,"y":7.55}},{"handlerName":"onMouseMove","eventData":{"x":4.5,"y":6.95}},{"handlerName":"onMouseMove","eventData":{"x":3.5,"y":6.45}},{"handlerName":"onMouseMove","eventData":{"x":2.5,"y":6.15}},{"handlerName":"onMouseMove","eventData":{"x":1.8,"y":5.95}},{"handlerName":"onMouseMove","eventData":{"x":1.2,"y":5.85}},{"handlerName":"onMouseMove","eventData":{"x":1,"y":5.85}},{"handlerName":"onMouseMove","eventData":{"x":0.9,"y":5.75}},{"handlerName":"onMouseMove","eventData":{"x":0.9,"y":5.65}},{"handlerName":"onMouseMove","eventData":{"x":0.9,"y":5.55}},{"handlerName":"onMouseMove","eventData":{"x":1,"y":5.55}},{"handlerName":"onMouseMove","eventData":{"x":1.1,"y":5.45}},{"handlerName":"onMouseMove","eventData":{"x":1.4,"y":5.35}},{"handlerName":"onMouseMove","eventData":{"x":1.5,"y":5.25}},{"handlerName":"onMouseMove","eventData":{"x":1.8,"y":5.05}},{"handlerName":"onMouseMove","eventData":{"x":1.9,"y":4.95}},{"handlerName":"onMouseMove","eventData":{"x":2,"y":4.95}},{"handlerName":"onMouseMove","eventData":{"x":2.3,"y":4.85}},{"handlerName":"onMouseMove","eventData":{"x":2.4,"y":4.65}},{"handlerName":"onMouseMove","eventData":{"x":2.6,"y":4.55}},{"handlerName":"onMouseMove","eventData":{"x":2.7,"y":4.45}},{"handlerName":"onMouseMove","eventData":{"x":2.9,"y":4.35}},{"handlerName":"onMouseMove","eventData":{"x":3,"y":4.25}},{"handlerName":"onMouseMove","eventData":{"x":3.1,"y":4.15}},{"handlerName":"onMouseMove","eventData":{"x":3.2,"y":4.15}},{"handlerName":"onMouseMove","eventData":{"x":3.3,"y":4.05}},{"handlerName":"onMouseDown","eventData":{"x":3.3,"y":4.05}},{"handlerName":"onMouseUp","eventData":{"x":3.3,"y":4.05}},{"handlerName":"onMouseMove","eventData":{"x":3.5,"y":4.05}},{"handlerName":"onMouseMove","eventData":{"x":4,"y":4.45}},{"handlerName":"onMouseMove","eventData":{"x":5.1,"y":5.05}},{"handlerName":"onMouseMove","eventData":{"x":6.3,"y":5.65}},{"handlerName":"onMouseMove","eventData":{"x":7.6,"y":6.25}},{"handlerName":"onMouseMove","eventData":{"x":8.9,"y":6.85}},{"handlerName":"onMouseMove","eventData":{"x":10.3,"y":7.55}},{"handlerName":"onMouseMove","eventData":{"x":11,"y":7.85}},{"handlerName":"onMouseMove","eventData":{"x":11.5,"y":8.05}},{"handlerName":"onMouseMove","eventData":{"x":11.6,"y":8.15}},{"handlerName":"onMouseMove","eventData":{"x":11.7,"y":8.15}},{"handlerName":"onMouseMove","eventData":{"x":11.7,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":11.8,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":11.9,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":12,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":12.2,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":12.2,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":12.3,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":12.4,"y":8.25}},{"handlerName":"onMouseDown","eventData":{"x":12.4,"y":8.25}},{"handlerName":"onMouseUp","eventData":{"x":12.4,"y":8.25}},{"handlerName":"onMouseMove","eventData":{"x":12.4,"y":8.05}},{"handlerName":"onMouseMove","eventData":{"x":12.7,"y":7.15}},{"handlerName":"onMouseMove","eventData":{"x":13.2,"y":5.75}},{"handlerName":"onMouseMove","eventData":{"x":14,"y":4.15}},{"handlerName":"onMouseMove","eventData":{"x":14.2,"y":3.25}},{"handlerName":"onMouseMove","eventData":{"x":14.5,"y":2.55}},{"handlerName":"onMouseMove","eventData":{"x":14.7,"y":2.15}},{"handlerName":"onMouseMove","eventData":{"x":14.8,"y":1.85}},{"handlerName":"onMouseMove","eventData":{"x":14.8,"y":1.35}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":0.95}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":0.45}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-0.15}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-0.45}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-0.75}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-0.95}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-0.95}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-1.25}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-1.75}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-1.95}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-2.15}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-2.25}},{"handlerName":"onMouseMove","eventData":{"x":14.9,"y":-1.95}},{"handlerName":"onMouseMove","eventData":{"x":15,"y":-1.55}},{"handlerName":"onMouseMove","eventData":{"x":15.2,"y":-1.05}},{"handlerName":"onMouseMove","eventData":{"x":15.3,"y":-0.75}},{"handlerName":"onMouseMove","eventData":{"x":15.4,"y":-0.65}},{"handlerName":"onMouseMove","eventData":{"x":15.4,"y":-0.55}},{"handlerName":"onMouseDown","eventData":{"x":15.4,"y":-0.55}},{"handlerName":"onMouseUp","eventData":{"x":15.4,"y":-0.55}},{"handlerName":"onMouseMove","eventData":{"x":15.8,"y":-0.55}},{"handlerName":"onMouseMove","eventData":{"x":16.6,"y":-0.45}},{"handlerName":"onMouseMove","eventData":{"x":18.1,"y":-0.35}},{"handlerName":"onMouseMove","eventData":{"x":19.6,"y":-0.05}},{"handlerName":"onMouseMove","eventData":{"x":21.2,"y":0.25}},{"handlerName":"onMouseMove","eventData":{"x":22.8,"y":0.65}},{"handlerName":"onMouseMove","eventData":{"x":25.2,"y":1.75}},{"handlerName":"onMouseMove","eventData":{"x":27.5,"y":3.05}},{"handlerName":"onMouseMove","eventData":{"x":30,"y":4.65}},{"handlerName":"onMouseMove","eventData":{"x":32.1,"y":5.65}}];
 
 describe('state behaviors and transitions', function() {
-  it('should do nothing if nothing happens', function () {
-    var Linkage = require('../Linkage.js');
-    var UI = require('../UI.js');
-    var UIState = require('../UIState');
+  function runTest(desc, initialSpec, eventLog, finalSpec) {
+    it(desc, function () {
+      var Linkage = require('../Linkage.js');
+      var UI = require('../UI.js');
+      var UIState = require('../UIState');
 
-    var initialState = UIState.getInitialPausedState(
-      new Linkage(initialSpec),
-      false
-    );
-    var ui = new UI(initialState, null, []);
+      // copy the initial spec (we expect the linkage to mutate it)
+      var linkage = new Linkage(JSON.parse(JSON.stringify(initialSpec)));
+      var initialState = UIState.getInitialPausedState(linkage, false);
+      var ui = new UI(initialState, null, []);
 
-    [].forEach(event => ui[event.handlerName](event.eventData));
-    expect(ui.state.linkage.spec).toEqual(initialSpec);
-  });
+      eventLog.forEach(event => ui[event.handlerName](event.eventData));
 
-  it('should do nothing if only the mouse moves', function () {
-    var Linkage = require('../Linkage.js');
-    var UI = require('../UI.js');
-    var UIState = require('../UIState');
-
-    var linkage = new Linkage(initialSpec);
-    var initialState = UIState.getInitialPausedState(linkage, false);
-    var ui = new UI(initialState, null, []);
-
-    mouseMoveEventLog.forEach(event => ui[event.handlerName](event.eventData));
-
-    expect(ui.state.linkage.spec).toEqual(initialSpec);
-  });
-
-  it('can build a fourbar', function () {
-    var Linkage = require('../Linkage.js');
-    var UI = require('../UI.js');
-    var UIState = require('../UIState');
-
-    var linkage = new Linkage(fourBarInitialSpec);
-    var initialState = UIState.getInitialPausedState(linkage, false);
-    var ui = new UI(initialState, null, []);
-
-    fourBarEventLog.forEach(event => {
-      ui[event.handlerName](event.eventData);
+      expect(ui.state.linkage.spec).toEqual(finalSpec);
     });
+  }
 
-    expect(ui.state.linkage.spec).toEqual(fourBarFinalSpec);
-  });
+  runTest(
+    'should do nothing if nothing happens',
+    initialSpec,
+    [],
+    initialSpec
+  );
+
+  runTest(
+    'should do nothing if only the mouse moves',
+    initialSpec,
+    mouseMoveEventLog,
+    initialSpec
+  );
+
+  runTest(
+    'can build a fourbar',
+    fourBarInitialSpec,
+    fourBarEventLog,
+    fourBarFinalSpec
+  );
 });
