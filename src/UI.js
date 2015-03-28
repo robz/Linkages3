@@ -4,6 +4,7 @@
 var UIState = require('./UIState');
 var LinkageRenderer = require('./LinkageRenderer');
 var Linkage = require('./Linkage');
+var LoggedUIEvent = require('./LoggedUIEvent');
 
 var euclid = require('./GeometryUtils').euclid;
 
@@ -24,13 +25,20 @@ class UI {
   hoverGround: boolean;
   hoverRotary: boolean;
 
-  prevClickPoint: Point;
+  prevClickPoint: ?Point;
+  eventLog: Array<LoggedEvent>;
 
-  constructor(canvasID: string, linkage: Linkage) {
-    linkage.calculatePositions();
+  constructor(
+    state: UIState,
+    renderer: LinkageRenderer,
+    eventLog: Array<LoggedEvent>
+  ) {
+    this.state = state;
+    this.renderer = renderer;
+    this.eventLog = eventLog;
 
-    this.renderer = new LinkageRenderer(canvasID);
-    this.state = UIState.getInitialState(linkage);
+    // need to have initial positions calculated for hover to work
+    this.state.linkage.calculatePositions();
 
     this.mousePoint = {x:0, y:0};
     this.dragging = false;
@@ -43,22 +51,37 @@ class UI {
 
     this.prevClickPoint = null;
 
+    var makeKeyHandler = name => {
+      return e => {
+        var key = e.which;
+        this.eventLog.push(new LoggedUIEvent(name, key));
+        (this: any)[name](key);
+      };
+    };
+
+    var makeMouseHandler = name => {
+      return e => {
+        var point = this.renderer.inverseTransform(e);
+        this.eventLog.push(new LoggedUIEvent(name, point));
+        (this: any)[name](point);
+      };
+    };
+
     var doc: any = document;
-    doc.onkeyup = this.onKeyUp.bind(this);
-    doc.onkeydown = this.onKeyDown.bind(this);
-    doc.onkeypress = this.onKeyPress.bind(this);
-    doc.onmousemove = this.onMouseMove.bind(this);
-    doc.onmousedown = this.onMouseDown.bind(this);
-    doc.onmouseup = this.onMouseUp.bind(this);
+    doc.onkeyup = makeKeyHandler('onKeyUp');
+    doc.onkeydown = makeKeyHandler('onKeyDown');
+    doc.onkeypress = makeKeyHandler('onKeyPress');
+    doc.onmousemove = makeMouseHandler('onMouseMove');
+    doc.onmousedown = makeMouseHandler('onMouseDown');
+    doc.onmouseup = makeMouseHandler('onMouseUp');
   }
 
   animate(): void {
-    this.state.linkage.calculatePositions();
     this.state.draw(this.renderer, this.mousePoint);
     window.requestAnimationFrame(this.animate.bind(this));
   }
 
-  onMouseDown(e: Point): void {
+  onMouseDown(mousePoint: Point): void {
     this.dragging = true;
     var newState = null;
 
@@ -71,10 +94,8 @@ class UI {
     this.state = newState ? newState : this.state;
   }
 
-  onMouseUp(e: Point): void {
+  onMouseUp(mousePoint: Point): void {
     this.dragging = false;
-
-    var mousePoint = this.renderer.inverseTransform(e);
 
     if (this.prevClickPoint) {
       if (euclid(this.prevClickPoint, mousePoint) < MIN_DIST) {
@@ -103,9 +124,7 @@ class UI {
     this.state = newState ? newState : this.state;
   }
 
-  onMouseMove(e: Point): void {
-    var mousePoint = this.renderer.inverseTransform(e);
-
+  onMouseMove(mousePoint: Point): void {
     if (this.dragging) {
       var newState = this.state.onMouseDrag(mousePoint);
       this.state = newState ? newState : this.state;
@@ -116,18 +135,18 @@ class UI {
     this.mousePoint = mousePoint;
   }
 
-  onKeyUp(e: {which: number}): void {
-    var newState = this.state.onKeyUp(e.which);
+  onKeyUp(which: number): void {
+    var newState = this.state.onKeyUp(which);
     this.state = newState ? newState : this.state;
   }
 
-  onKeyDown(e: {which: number}): void {
-    var newState = this.state.onKeyDown(e.which);
+  onKeyDown(which: number): void {
+    var newState = this.state.onKeyDown(which);
     this.state = newState ? newState : this.state;
   }
 
-  onKeyPress(e: {which: number}): void {
-    var newState = this.state.onKeyPress(e.which);
+  onKeyPress(which: number): void {
+    var newState = this.state.onKeyPress(which);
     this.state = newState ? newState : this.state;
   }
 

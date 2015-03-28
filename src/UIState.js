@@ -30,9 +30,17 @@ var previewOptions = {
   pointColor: 'red',
 };
 
+var _debug = false;
+
 class BaseState {
-  static getInitialState(linkage: Linkage) {
+  static getInitialUnpausedState(linkage: Linkage, debug: boolean) {
+    _debug = debug;
     return new UnpausedState(linkage);
+  }
+
+  static getInitialPausedState(linkage: Linkage, debug: boolean) {
+    _debug = debug;
+    return new State0(linkage);
   }
 
   linkage: Linkage;
@@ -42,8 +50,10 @@ class BaseState {
   pointB: ?Point;
 
   constructor(linkage: Linkage, spec?: ?StateSpec) {
-    // state transition debugging
-    console.log(new Error().stack);
+    if (_debug) {
+      // state transition debugging
+      console.log(new Error().stack);
+    }
 
     this.linkage = linkage;
 
@@ -234,6 +244,7 @@ class State11 extends PausedState { // rotary hover
 
   onMouseUp(mousePoint: Point): ?BaseState {
     this.linkage.addRotaryInput(mousePoint);
+    this.linkage.calculatePositions();
     return new State0(this.linkage);
   }
 
@@ -269,6 +280,7 @@ class State1 extends PausedState { // canvas1
 class State13 extends PausedState { // canvas then point
   onCanvasUp(pointB: Point): ?BaseState {
     this.linkage.addGroundSegment(this.pointA, pointB, this.p0id);
+    this.linkage.calculatePositions();
     return new State0(this.linkage);
   }
 
@@ -288,6 +300,7 @@ class State13 extends PausedState { // canvas then point
 class State2 extends PausedState { // canvas1 + canvas2
   onAnyPointUp(p0id: string): ?BaseState {
     this.linkage.addGroundSegment(this.pointA, this.pointB, p0id);
+    this.linkage.calculatePositions();
     return new State0(this.linkage);
   }
 
@@ -354,6 +367,7 @@ class State4 extends PausedState { // point1
 class State5 extends PausedState { // point2
   onCanvasUp(pointA: Point): ?BaseState {
     this.linkage.addTriangle(this.p0id, this.p1id, pointA);
+    this.linkage.calculatePositions();
     return new State0(this.linkage);
   }
 
@@ -373,11 +387,13 @@ class State5 extends PausedState { // point2
 class State6 extends PausedState { // point1 + canvas1
   onCanvasUp(pointB: Point): ?BaseState {
     this.linkage.addGroundSegment(pointB, this.pointA, this.p0id);
+    this.linkage.calculatePositions();
     return new State0(this.linkage);
   }
 
   onAnyPointUp(p1id: string): ?BaseState {
     this.linkage.addTriangle(this.p0id, p1id, this.pointA);
+    this.linkage.calculatePositions();
     return new State0(this.linkage);
   }
 
@@ -460,6 +476,7 @@ class State8 extends PausedState { // rotary selected
 class State9 extends PausedState { // segment selected
   onCanvasUp(pointA: Point): ?BaseState {
     this.linkage.addTriangle(this.p0id, this.p1id, pointA);
+    this.linkage.calculatePositions();
     return new State0(this.linkage);
   }
 
