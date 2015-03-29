@@ -6,8 +6,6 @@ var LinkageRenderer = require('./LinkageRenderer');
 var Linkage = require('./Linkage');
 var LoggedUIEvent = require('./LoggedUIEvent');
 
-var MIN_DIST = 0.5;
-
 type Point = {x: number; y: number};
 
 class UI {
@@ -100,12 +98,22 @@ class UI {
 
   onMouseDown(mousePoint: Point): void {
     this.dragging = true;
+
     var newState = null;
 
-    if (this.hoverRotary) {
+    if (this.hoverSegmentIDs) {
+      newState = this.state.onSegmentDown(
+        this.hoverSegmentIDs[0],
+        this.hoverSegmentIDs[1]
+      );
+    } else if (this.hoverRotary) {
       newState = this.state.onRotaryDown(this.hoverPointID);
     } else if (this.hoverGround) {
       newState = this.state.onGroundDown(this.hoverPointID);
+    } else if (this.hoverPoint) {
+      newState = this.state.onPointDown(this.hoverPointID);
+    } else {
+      newState = this.state.onCanvasDown(mousePoint);
     }
 
     this.state = newState ? newState : this.state;
@@ -113,17 +121,17 @@ class UI {
 
   onMouseUp(mousePoint: Point): void {
     this.dragging = false;
-    var newState = this.state.onMouseUp(mousePoint);
 
-    if (!newState && this.hoverPointID) {
-      newState = this.state.onAnyPointUp(this.hoverPointID);
-    }
+    var newState = this.state.onMouseUp(mousePoint);
 
     if (!newState) {
       if (this.hoverSegmentIDs) {
-        newState = this.state.onSegmentUp(this.hoverSegmentIDs[0], this.hoverSegmentIDs[1]);
-      } else if (this.hoverPoint || this.hoverGround || this.hoverRotary) {
-        newState = this.state.onPointUp(this.hoverPointID);
+        newState = this.state.onSegmentUp(
+          this.hoverSegmentIDs[0],
+          this.hoverSegmentIDs[1]
+        );
+      } else if (this.hoverPointID) {
+        newState = this.state.onAnyPointUp(this.hoverPointID);
       } else {
         newState = this.state.onCanvasUp(mousePoint);
       }
@@ -136,10 +144,9 @@ class UI {
     if (this.dragging) {
       var newState = this.state.onMouseDrag(mousePoint);
       this.state = newState ? newState : this.state;
-    } else {
-      this.setHovers(mousePoint);
     }
 
+    this.setHovers(mousePoint);
     this.mousePoint = mousePoint;
   }
 

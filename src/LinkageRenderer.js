@@ -99,22 +99,32 @@ class CanvasRenderer {
 
   // TODO how to get rid of any type here?
   drawLines(points: Array<any>, options?: OptionsType) {
-    if (!points[0] || !points[1]) {
-      throw new Error('first two points must be defined');
+    if (points.length === 0) {
+      throw new Error('first point must be defined');
     }
 
-    this.drawLine(points[0], points[1], options);
+    var {lineColor, lineWidth, pointColor, pointRadius} = getOptions(options);
+    this.ctx.save();
+    this.ctx.strokeStyle = lineColor;
+    this.ctx.lineWidth = lineWidth;
+    this.ctx.fillStyle = pointColor;
 
-    if (points[2]) {
-      this.drawLine(points[1], points[2], options);
-    }
+    this.ctx.beginPath();
+    this.ctx.moveTo(points[0].x, points[0].y);
+    points.forEach((point, i) => {
+      if (i !== 0) {
+        this.ctx.lineTo(point.x, point.y);
+      }
+    });
+    this.ctx.stroke();
 
-    this.drawPoint(points[0], options);
-    this.drawPoint(points[1], options);
+    points.forEach(({x, y}) => {
+      this.ctx.beginPath();
+      this.ctx.arc(x, y, pointRadius, 0, 2 * Math.PI, true);
+      this.ctx.fill();
+    });
 
-    if (points[2]) {
-      this.drawPoint(points[2], options);
-    }
+    this.ctx.restore();
   }
 
   drawLines2(points: Array<Point>, options?: OptionsType) {

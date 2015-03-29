@@ -31,16 +31,12 @@ var previewOptions = {
   pointColor: 'red',
 };
 
-var _debug = false;
-
 class BaseState {
-  static getInitialUnpausedState(linkage: Linkage, debug: boolean) {
-    _debug = debug;
+  static getInitialUnpausedState(linkage: Linkage) {
     return new UnpausedState(linkage);
   }
 
-  static getInitialPausedState(linkage: Linkage, debug: boolean) {
-    _debug = debug;
+  static getInitialPausedState(linkage: Linkage) {
     return new State0(linkage);
   }
 
@@ -51,11 +47,6 @@ class BaseState {
   pointB: ?Point;
 
   constructor(linkage: Linkage, spec?: ?StateSpec) {
-    if (_debug) {
-      // state transition debugging
-      console.log(new Error().stack);
-    }
-
     this.linkage = linkage;
 
     if (spec) {
@@ -82,12 +73,15 @@ class BaseState {
   onKeyUp(key: number): ?BaseState {}
 
   // UI element-specific hanlders (convenience)
-  onGroundDown(p0id: string): ?BaseState {}
-  onRotaryDown(p0id: string): ?BaseState {}
   onAnyPointUp(p0id: string): ?BaseState {}
-  onPointUp(p0id: string): ?BaseState {}
-  onSegmentUp(p0id: string, p1id: string): ?BaseState {}
+  onCanvasDown(pointA: Point): ?BaseState {}
   onCanvasUp(pointA: Point): ?BaseState {}
+  onGroundDown(p0id: string): ?BaseState {}
+  onPointDown(p0id: string): ?BaseState {}
+  onPointUp(p0id: string): ?BaseState {}
+  onRotaryDown(p0id: string): ?BaseState {}
+  onSegmentDown(p0id: string, p1id: string): ?BaseState {}
+  onSegmentUp(p0id: string, p1id: string): ?BaseState {}
 }
 
 class UnpausedState extends BaseState {  // initial unpaused
@@ -209,15 +203,15 @@ class State0 extends PausedState { // initial paused
     return new State7(this.linkage, {p0id});
   }
 
-  onPointUp(p0id: string): ?BaseState {
-    return new State4(this.linkage, {p0id});
+  onPointDown(p0id: string): ?BaseState {
+    return new State14(this.linkage, {p0id});
   }
 
-  onSegmentUp(p0id: string, p1id: string): ?BaseState {
+  onSegmentDown(p0id: string, p1id: string): ?BaseState {
     return new State9(this.linkage, {p0id, p1id});
   }
 
-  onCanvasUp(pointA: Point): ?BaseState {
+  onCanvasDown(pointA: Point): ?BaseState {
     return new State1(this.linkage, {pointA});
   }
 
@@ -229,6 +223,27 @@ class State0 extends PausedState { // initial paused
       default:
         return this;
     }
+  }
+}
+
+class State14 extends PausedState { // point down
+  dragged: ?boolean;
+
+  onMouseUp(mousePoint: Point): ?BaseState {
+    return this.dragged ?
+      new State0(this.linkage) :
+      new State4(this.linkage, {p0id: this.p0id});
+  }
+
+  onMouseDrag(point: Point): ?BaseState {
+    this.dragged = true;
+    this.linkage.moveNotGroundPoint(point, this.p0id);
+    return this;
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
   }
 }
 
@@ -355,6 +370,11 @@ class State3 extends PausedState { // ground down
     this.dragged = true;
     this.linkage.tryMovingGroundPoints([{point, id:this.p0id}]);
     return this;
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
   }
 }
 
@@ -500,6 +520,20 @@ class State7 extends PausedState { // rotary down
 
     return this;
   }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+    var p1id = this.linkage.spec.rotaries[this.p0id];
+    var p2id = this.linkage.spec.extenders[p1id].ref;
+    renderer.drawLines(
+      [
+        this.linkage.getPoint(p1id),
+        this.linkage.getPoint(this.p0id),
+        this.linkage.getPoint(p2id),
+      ],
+      previewOptions
+    );
+  }
 }
 
 class State8 extends State0 { // rotary selected
@@ -570,9 +604,10 @@ class State9 extends PausedState { // segment selected
     super.draw(renderer, mousePoint);
     renderer.drawLines(
       [
-        this.linkage.getPoint(this.p0id),
         mousePoint,
+        this.linkage.getPoint(this.p0id),
         this.linkage.getPoint(this.p1id),
+        mousePoint,
       ],
       previewOptions
     );

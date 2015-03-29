@@ -73,6 +73,35 @@ class Linkage {
     }
   }
 
+  moveNotGroundPoint(
+    newPos: Point,
+    p0id: string
+  ): void {
+    if (this.spec.extenders[p0id]) {
+      var basePoint = this.positions[this.spec.extenders[p0id].base];
+      var refPoint = this.positions[this.spec.extenders[p0id].ref];
+      var newDist = Geom.euclid(newPos, basePoint);
+      this.spec.extenders[p0id].len = newDist;
+      this.spec.extenders[p0id].angle = Math.atan2(
+        newPos.y - basePoint.y,
+        newPos.x - basePoint.x
+      ) - Math.atan2(
+        refPoint.y - basePoint.y,
+        refPoint.x - basePoint.x
+      );
+    }
+
+    Object.keys(this.spec.points[p0id]).forEach(p1id => {
+      var newDist = Geom.euclid(newPos, this.positions[p1id]);
+      this.spec.points[p0id][p1id].len = newDist;
+      this.spec.points[p1id][p0id].len = newDist;
+    });
+
+    if (!this.calculatePositions()) {
+      throw 'wat';
+    }
+  }
+
   tryMovingGroundPoints(
     points: Array<{point: Point; id: string}>
   ): boolean {
