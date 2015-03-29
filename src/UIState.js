@@ -12,8 +12,9 @@
 
 var Linkage = require('./Linkage');
 var LinkageRenderer = require('./LinkageRenderer');
-
 var KEYS = require('./KEYS');
+
+var mixinPointValidation = require('./mixinPointValidation');
 
 var MAX_TRACE_POINTS = 100;
 
@@ -263,6 +264,16 @@ class State11 extends PausedState { // rotary hover
 }
 
 class State1 extends PausedState { // canvas1
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+
+    mixinPointValidation(
+      [this.pointA],
+      ['onCanvasUp', 'onAnyPointUp'],
+      this
+    );
+  }
+
   onCanvasUp(pointB: Point): ?BaseState {
     return new State2(this.linkage, {pointA: this.pointA, pointB});
   }
@@ -278,6 +289,16 @@ class State1 extends PausedState { // canvas1
 }
 
 class State13 extends PausedState { // canvas then point
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+
+    mixinPointValidation(
+      [this.pointA, this.linkage.getPoint(this.p0id)],
+      ['onCanvasUp'],
+      this
+    );
+  }
+
   onCanvasUp(pointB: Point): ?BaseState {
     this.linkage.addGroundSegment(this.pointA, pointB, this.p0id);
     this.linkage.calculatePositions();
@@ -298,6 +319,16 @@ class State13 extends PausedState { // canvas then point
 }
 
 class State2 extends PausedState { // canvas1 + canvas2
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+
+    mixinPointValidation(
+      [this.pointB],
+      ['onAnyPointUp'],
+      this
+    );
+  }
+
   onAnyPointUp(p0id: string): ?BaseState {
     this.linkage.addGroundSegment(this.pointA, this.pointB, p0id);
     this.linkage.calculatePositions();
@@ -328,6 +359,16 @@ class State3 extends PausedState { // ground down
 }
 
 class State4 extends PausedState { // point1
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+
+    mixinPointValidation(
+      [this.linkage.getPoint(this.p0id)],
+      ['onAnyPointUp', 'onCanvasUp'],
+      this
+    );
+  }
+
   onAnyPointUp(p1id: string): ?BaseState {
     return new State5(this.linkage, {p0id: this.p0id, p1id})
   }
@@ -365,6 +406,16 @@ class State4 extends PausedState { // point1
 }
 
 class State5 extends PausedState { // point2
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+
+    mixinPointValidation(
+      [this.linkage.getPoint(this.p0id), this.linkage.getPoint(this.p1id)],
+      ['onCanvasUp'],
+      this
+    );
+  }
+
   onCanvasUp(pointA: Point): ?BaseState {
     this.linkage.addTriangle(this.p0id, this.p1id, pointA);
     this.linkage.calculatePositions();
@@ -385,6 +436,16 @@ class State5 extends PausedState { // point2
 }
 
 class State6 extends PausedState { // point1 + canvas1
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+
+    mixinPointValidation(
+      [this.pointA, this.linkage.getPoint(this.p0id)],
+      ['onCanvasUp', 'onAnyPointUp'],
+      this
+    );
+  }
+
   onCanvasUp(pointB: Point): ?BaseState {
     this.linkage.addGroundSegment(pointB, this.pointA, this.p0id);
     this.linkage.calculatePositions();
@@ -474,6 +535,16 @@ class State8 extends State0 { // rotary selected
 }
 
 class State9 extends PausedState { // segment selected
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+
+    mixinPointValidation(
+      [this.linkage.getPoint(this.p0id), this.linkage.getPoint(this.p1id)],
+      ['onCanvasUp'],
+      this
+    );
+  }
+
   onCanvasUp(pointA: Point): ?BaseState {
     this.linkage.addTriangle(this.p0id, this.p1id, pointA);
     this.linkage.calculatePositions();
