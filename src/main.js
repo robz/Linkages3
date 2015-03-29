@@ -10,7 +10,7 @@ var UIState = require('./UIState');
 var linkageData = require('./linkageData.js');
 
 var linkage = new Linkage(linkageData);
-var initialState = UIState.getInitialUnpausedState(linkage, true);
+var initialState = UIState.getInitialUnpausedState(linkage, false);
 var renderer = new LinkageRenderer('mycanvas');
 
 var ui = new UI(initialState, renderer, []);

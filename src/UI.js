@@ -26,16 +26,29 @@ class UI {
   hoverRotary: boolean;
 
   prevClickPoint: ?Point;
+
+  prevStateEvent: string;
+  stateHistory: Array<string>;
   eventLog: Array<LoggedEvent>;
+
+  logAndReset() {
+    console.log(this.stateHistory.join('_'));
+    console.log(JSON.stringify(this.state.linkage.spec));
+    console.log(JSON.stringify(this.eventLog));
+    this.eventLog = [];
+    this.stateHistory = [];
+  }
 
   constructor(
     state: UIState,
-    renderer: LinkageRenderer,
-    eventLog: Array<LoggedEvent>
+    renderer: LinkageRenderer
   ) {
     this.state = state;
     this.renderer = renderer;
-    this.eventLog = eventLog;
+    this.eventLog = [];
+
+    this.prevStateName = this.state.constructor.name;
+    this.stateHistory = [this.prevStateName];
 
     // need to have initial positions calculated for hover to work
     this.state.linkage.calculatePositions();
@@ -56,6 +69,11 @@ class UI {
         var key = e.which;
         this.eventLog.push(new LoggedUIEvent(name, key));
         (this: any)[name](key);
+
+        if (this.prevStateName !== this.state.constructor.name) {
+          this.prevStateName = this.state.constructor.name;
+          this.stateHistory.push(this.prevStateName);
+        }
       };
     };
 
@@ -64,6 +82,11 @@ class UI {
         var point = this.renderer.inverseTransform(e);
         this.eventLog.push(new LoggedUIEvent(name, point));
         (this: any)[name](point);
+
+        if (this.prevStateName !== this.state.constructor.name) {
+          this.prevStateName = this.state.constructor.name;
+          this.stateHistory.push(this.prevStateName);
+        }
       };
     };
 

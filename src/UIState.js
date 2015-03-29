@@ -441,7 +441,7 @@ class State7 extends PausedState { // rotary down
   }
 }
 
-class State8 extends PausedState { // rotary selected
+class State8 extends State0 { // rotary selected
   onKeyUp(key: number): ?BaseState {
     switch (key) {
       case KEYS.SPACE:
