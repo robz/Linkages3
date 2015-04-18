@@ -4,14 +4,14 @@ var euclid = require('./GeometryUtils').euclid;
 
 var MIN_SEGMENT_LENGTH = 0.5;
 
-function mixinPointValidation(points, functNames, context) {
+function mixinPointValidation(points, functNames, that) {
   var isPointValid = function(point) {
     return points.reduce((accum, p2) => {
       return accum && euclid(point, p2) >= MIN_SEGMENT_LENGTH;
     }, true);
   };
 
-  var validateMethods = {
+  var validateFuncts = {
     onMouseDrag(point: Point): boolean {
       return isPointValid(point);
     },
@@ -41,13 +41,20 @@ function mixinPointValidation(points, functNames, context) {
     },
   };
 
+  // replace each provided method (call it F) with new method (call it G) that
+  // wraps F. G executes the validation function first, and if the validation
+  // function returns true, G returns the result of calling F. otherwise, it
+  // returns the context of the method.
   functNames.forEach(functName => {
-    var validate = validateMethods[functName];
-    var original = context[functName];
+    var validateFunct = validateFuncts[functName];
+    var originalFunct = that[functName];
 
-    context[functName] = function(...args) {
-      return validate.apply(context, args) ?
-        original.apply(context, args) :
+    that[functName] = function(...args) {
+      // use `this` instead of `that` for the context so that the new method
+      // can be used in whatever context it's need (especially useful for
+      // inheritance)
+      return validateFunct.apply(this, args) ?
+        originalFunct.apply(this, args) :
         this;
     };
   });

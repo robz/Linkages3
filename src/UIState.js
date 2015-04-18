@@ -78,7 +78,6 @@ class BaseState {
   onCanvasUp(pointA: Point): ?BaseState {}
   onGroundDown(p0id: string): ?BaseState {}
   onPointDown(p0id: string): ?BaseState {}
-  onPointUp(p0id: string): ?BaseState {}
   onRotaryDown(p0id: string): ?BaseState {}
   onSegmentDown(p0id: string, p1id: string): ?BaseState {}
   onSegmentUp(p0id: string, p1id: string): ?BaseState {}
