@@ -29,6 +29,13 @@ type StateSpec = {
 var previewOptions = {
   lineColor: 'pink',
   pointColor: 'red',
+  drawPoints: true,
+};
+
+var traceOptions = {
+  lineColor: 'pink',
+  pointColor: 'red',
+  drawPoints: false,
 };
 
 class BaseState {
@@ -65,7 +72,7 @@ class BaseState {
   }
 
   // Basic handlers
-  onMouseDrag(point: Point): ?BaseState {}
+  onMouseDrag(mousePoint: Point): ?BaseState {}
   onMouseDown(): ?BaseState {}
   onMouseUp(mousePoint: Point): ?BaseState {}
   onKeyPress(key: number): ?BaseState {}
@@ -175,7 +182,7 @@ class State12 extends UnpausedState { // trace point
       this.tracePoints.shift();
     }
 
-    renderer.drawLines2(this.tracePoints, previewOptions);
+    renderer.drawLines(this.tracePoints, traceOptions);
     renderer.drawPoint(curPoint, previewOptions);
   }
 }
@@ -219,9 +226,144 @@ class State0 extends PausedState { // initial paused
       case KEYS.R:
       case KEYS.r:
         return new State11(this.linkage);
+      case KEYS.o:
+      case KEYS.O:
+        return new State15(this.linkage);
       default:
         return this;
     }
+  }
+}
+
+class OptimizeState extends PausedState {
+  onKeyDown(key: number): ?BaseState {
+    switch (key) {
+      case KEYS.o:
+      case KEYS.O:
+        return new State0(this.linkage);
+      default:
+        return this;
+    }
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+
+    if (this.drawnPoints) {
+      renderer.drawLines(this.drawnPoints, traceOptions);
+      renderer.drawPoint(mousePoint, previewOptions);
+    }
+  }
+}
+
+class State15 extends OptimizeState { // initial optimize
+  onMouseDown(): ?BaseState {
+    return new State16(this.linkage);
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+
+    renderer.drawPoint(mousePoint, previewOptions);
+  }
+}
+
+class State16 extends OptimizeState { // draw optimize path
+  constructor(linkage: Linkage, spec: StateSpec) {
+    super(linkage, spec);
+    this.drawnPoints = [];
+  }
+
+  onMouseDrag(mousePoint: Point): ?BaseState {
+    this.drawnPoints.push(mousePoint);
+    return this;
+  }
+
+  onMouseUp(mousePoint: Point): ?BaseState {
+    return new State17(this.linkage, {}, this.drawnPoints);
+  }
+}
+
+class State17 extends OptimizeState {
+  constructor(linkage: Linkage, spec: StateSpec, drawnPoints: Array<Point>) {
+    super(linkage, spec);
+    this.drawPoints = drawnPoints;
+    this._stopOptimizing = false;
+    this._startOptimization();
+  }
+
+  onKeyDown(key: number): ?BaseState {}
+    this._stopOptimizing = true;
+    return super.onKeyDown(key);
+  }
+
+  _startOptimization() {
+    class Feature {
+      _linkage: Linkage;
+
+      tweak() {
+
+      }
+    }
+
+    class LinkageOptWrapper {
+      linkage: Linkage;
+      perf: number;
+
+      constructor(linkage: Linkage, desiredPath: Array<Point>): void {
+        this.perf = Number.MAX_VALUE;
+      }
+
+      getFeatures(): Array<Feature> {
+
+      }
+
+      isValid(): boolean {
+
+      }
+
+      calcPerf(): number {
+
+      }
+    }
+
+    var optimize = (linkage, prevPerf) => {
+      // copy the old thing
+      var newLinkageWrapper = new LinkageOptWrapper(linkage, this.drawPoints);
+
+      // loop through all features
+      newLinkageWrapper.getFeatures().forEach(feature => {
+        // tweak each one by a small random amount
+        feature.tweak();
+      });
+
+      // if the new thing is invalid,
+      if (!newLinkageWrapper.isValid()) {
+        // return the old thing and its performance
+        return {linkage, perf: prevPerf};
+      }
+
+      // if the performance of the new thing isn't better than the old thing's,
+      var newPerf = newLinkageWrapper.calcPerf();
+      if (newPerf >= prevPerf) { // (the lower the perf value the better)
+        // return the old thing and its performance
+        return {linkage, perf: prevPerf};
+      }
+
+      // return the new thing and its performance
+      return newLinkageWrapper;
+    };
+
+    var pauseTime = 0;
+
+    var iterate = () => {
+      if (!this._stopOptimizing) {
+        setTimeout(iterate, pauseTime);
+        optimize();
+      }
+    };
+
+    setTimeout(iterate, pauseTime);
   }
 }
 
@@ -234,9 +376,9 @@ class State14 extends PausedState { // point down
       new State4(this.linkage, {p0id: this.p0id});
   }
 
-  onMouseDrag(point: Point): ?BaseState {
+  onMouseDrag(mousePoint: Point): ?BaseState {
     this.dragged = true;
-    this.linkage.moveNotGroundPoint(point, this.p0id);
+    this.linkage.moveNotGroundPoint(mousePoint, this.p0id);
     return this;
   }
 
@@ -365,9 +507,9 @@ class State3 extends PausedState { // ground down
       new State4(this.linkage, {p0id: this.p0id});
   }
 
-  onMouseDrag(point: Point): ?BaseState {
+  onMouseDrag(mousePoint: Point): ?BaseState {
     this.dragged = true;
-    this.linkage.tryMovingGroundPoints([{point, id:this.p0id}]);
+    this.linkage.tryMovingGroundPoints([{point: mousePoint, id:this.p0id}]);
     return this;
   }
 
@@ -499,7 +641,7 @@ class State7 extends PausedState { // rotary down
       new State8(this.linkage, {p0id: this.p0id});
   }
 
-  onMouseDrag(point: Point): ?BaseState {
+  onMouseDrag(mousePoint: Point): ?BaseState {
     this.dragged = true;
 
     var {rotaries, extenders, groundPoints} = this.linkage.spec;
@@ -508,12 +650,12 @@ class State7 extends PausedState { // rotary down
     var refID = extenders[rotaries[this.p0id]].ref;
     var refCurPoint = groundPoints[refID];
     var refNextPoint = {
-      x: refCurPoint.x + point.x - prevX,
-      y: refCurPoint.y + point.y - prevY,
+      x: refCurPoint.x + mousePoint.x - prevX,
+      y: refCurPoint.y + mousePoint.y - prevY,
     };
 
     this.linkage.tryMovingGroundPoints([
-      {point, id: this.p0id},
+      {point: mousePoint, id: this.p0id},
       {point: refNextPoint, id: refID},
     ]);
 

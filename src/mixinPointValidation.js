@@ -1,4 +1,5 @@
 /* @flow */
+'use strict';
 
 var euclid = require('./GeometryUtils').euclid;
 

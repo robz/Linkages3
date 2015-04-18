@@ -1,10 +1,10 @@
 /* @flow */
 'use strict';
 
-var UIState = require('./UIState');
-var LinkageRenderer = require('./LinkageRenderer');
 var Linkage = require('./Linkage');
+var LinkageRenderer = require('./LinkageRenderer');
 var LoggedUIEvent = require('./LoggedUIEvent');
+var UIState = require('./UIState');
 
 type Point = {x: number; y: number};
 
@@ -25,6 +25,7 @@ class UI {
   stateHistory: Array<string>;
   eventLog: Array<LoggedEvent>;
 
+  // called from the browser console to extract logs
   logAndReset() {
     console.log(this.stateHistory.join('_'));
     console.log(JSON.stringify(this.state.linkage.spec));
@@ -56,6 +57,12 @@ class UI {
     this.hoverGround = false;
     this.hoverRotary = false;
 
+    //
+    // wrap key and mouse handler methods, logging the event name, and key
+    // pressed or mouse position. we can extract the log from the console, and
+    // use it to make integration tests that are abstracted from the browser.
+    // (see src/__tests__/Integration-test.js)
+    //
     var makeKeyHandler = name => {
       return e => {
         var key = e.which;
@@ -114,6 +121,9 @@ class UI {
       newState = this.state.onPointDown(this.hoverPointID);
     } else {
       newState = this.state.onCanvasDown(mousePoint);
+      if (!newState) {
+        newState = this.state.onMouseDown(mousePoint);
+      }
     }
 
     this.state = newState ? newState : this.state;
