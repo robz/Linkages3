@@ -20,6 +20,31 @@ class Linkage {
     this.positions = {};
   }
 
+  getPath(id: string) {
+    // save current state
+    var oldInputs = Object.keys(this.spec.extenders).map(id => {
+      return {
+        id,
+        angle: this.spec.extenders[id].angle,
+      };
+    });
+
+    var size = 100;
+    var path = [];
+    for (var i = 0; i < size; i++) {
+      this.tryRotatingLinkageInput();
+      path.push(this.getPoint(id));
+    }
+
+    // restore old state
+    oldInputs.forEach(o => {
+      this.spec.extenders[o.id].angle = o.angle;
+    });
+    this.calculatePositions();
+
+    return path;
+  }
+
   _deletePointFromSpec(spec: LinkageSpecType, id: string): void {
     delete spec.groundPoints[id];
     delete spec.points[id];

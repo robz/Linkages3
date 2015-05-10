@@ -292,7 +292,7 @@ class State17 extends OptimizeState {
     this._startOptimization();
   }
 
-  onKeyDown(key: number): ?BaseState {}
+  onKeyDown(key: number): ?BaseState {
     this._stopOptimizing = true;
     return super.onKeyDown(key);
   }

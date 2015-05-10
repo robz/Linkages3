@@ -10,8 +10,27 @@ function euclid(p1: Point, p2: Point): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+function calcSumOfMins(path1: Array<Point>, path2: Array<Point>) {
+  var sum = 0;
+
+  path1.forEach(p1 => {
+    var minDist = Number.MAX_VALUE;
+
+    path2.forEach(p2 => {
+      var dist = euclid(p1, p2);
+      if (dist < minDist) {
+        minDist = dist;
+      }
+    });
+
+    sum += minDist;
+  });
+
+  return sum;
+}
+
 function calcMinDistFromSegmentToPoint(
-  segment: Object, 
+  segment: Object,
   p3: Point
 ): number {
   var point = null;
@@ -31,14 +50,14 @@ function calcMinDistFromSegmentToPoint(
     };
   }
 
-  return euclid(point, p3); 
+  return euclid(point, p3);
 }
 
 function findClosestThingToPoint(
-  things: Array<any>, 
-  point: Point, 
-  distanceBetween: (point: Point, thing: any) => number, 
-  startingThing?: any, 
+  things: Array<any>,
+  point: Point,
+  distanceBetween: (point: Point, thing: any) => number,
+  startingThing?: any,
   startingDistance?: number
 ): {thing: ?any; dist: number} {
   return things.reduce((best, thing) => {
@@ -52,9 +71,9 @@ function findClosestThingToPoint(
 }
 
 function calcPointFromTriangle(
-  p1: Point, 
-  p2: Point, 
-  a1: number, 
+  p1: Point,
+  p2: Point,
+  a1: number,
   a2: number
 ): {sol1: Point; sol2: Point} {
   var a3 = euclid(p1, p2);
@@ -76,11 +95,11 @@ function calcPointFromTriangle(
 
   return {
     sol1: {
-      x: p1.x + a1 * Math.cos(alpha1 + theta1), 
+      x: p1.x + a1 * Math.cos(alpha1 + theta1),
       y: p1.y + a1 * Math.sin(alpha1 + theta1),
     },
     sol2: {
-      x: p1.x + a1 * Math.cos(-alpha1 + theta1), 
+      x: p1.x + a1 * Math.cos(-alpha1 + theta1),
       y: p1.y + a1 * Math.sin(-alpha1 + theta1),
     },
   };
@@ -88,8 +107,8 @@ function calcPointFromTriangle(
 
 function calcPointFromExtender(
   p1: Point,
-  p2: Point, 
-  len: number, 
+  p2: Point,
+  len: number,
   angle: number
 ): Point {
   var baseAngle = Math.atan2(p2.y - p1.y, p2.x - p1.x);
@@ -101,9 +120,10 @@ function calcPointFromExtender(
 }
 
 module.exports = {
-  euclid, 
+  euclid,
   calcMinDistFromSegmentToPoint,
   findClosestThingToPoint,
-  calcPointFromTriangle, 
-  calcPointFromExtender, 
+  calcPointFromTriangle,
+  calcPointFromExtender,
+  calcSumOfMins,
 };
