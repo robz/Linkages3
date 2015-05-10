@@ -22,3 +22,58 @@ describe('calcFromTriangle', function() {
     }
   );
 });
+
+describe('calcSumOfMins', function() {
+  it('sums distance with paths of only one point each',
+    function () {
+      var calcSumOfMins = require('../GeometryUtils').calcSumOfMins;
+      var path1 = [
+        {x:0,y:0},
+      ];
+      var path2 = [
+        {x:3,y:4},
+      ];
+      var res = calcSumOfMins(path1, path2);
+      expect(res).toBeCloseTo(5, 1e-10);
+    }
+  );
+
+  it('finds the min dist from a point in the first path to the second',
+    function () {
+      var calcSumOfMins = require('../GeometryUtils').calcSumOfMins;
+      var path1 = [
+        {x:0,y:0},
+      ];
+      var path2 = [
+        {x:0,y:1},
+        {x:0,y:2},
+        {x:0,y:3},
+        {x:0,y:-2},
+        {x:1,y:1},
+        {x:-1,y:2},
+      ];
+      var res = calcSumOfMins(path1, path2);
+      expect(res).toBe(1);
+    }
+  );
+
+  it('sums mins',
+    function () {
+      var calcSumOfMins = require('../GeometryUtils').calcSumOfMins;
+      var path1 = [
+        {x:0,y:0},
+        {x:0,y:8},
+        {x:6,y:0},
+        {x:6,y:8},
+      ];
+      var path2 = [
+        {x:3,y:4},
+        {x:30,y:4},
+        {x:10,y:40},
+        {x:-10,y:15},
+      ];
+      var res = calcSumOfMins(path1, path2);
+      expect(res).toBeCloseTo(5*4, 1e-10);
+    }
+  );
+});
