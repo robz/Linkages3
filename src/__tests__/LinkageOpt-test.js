@@ -5,8 +5,9 @@ describe('LinkageOptObj', function() {
     var LinkageOptObj = require('../optimize/LinkageOptObj');
     var optimizeStep = require('../optimize/optimizeStep');
 
+    var goal = {x:10,y:0};
     var optObj = new LinkageOptObj({
-      path: [{x:10,y:0}],
+      path: [goal],
       linkageSpec: require('../linkageData'),
       id: 'p2',
     });
@@ -19,5 +20,11 @@ describe('LinkageOptObj', function() {
       expect(oldPerf >= newPerf).toBe(true);
       optObj = nextOptObj;
     }
+
+    var euclid = require('../GeometryUtils').euclid;
+    var res = optObj.__data.linkageSpec.groundPoints.p1;
+    var delta = euclid(res, goal);
+    //console.log('delta: ' + delta);
+    expect(delta).toBeLessThan(.25);
   });
 });

@@ -20,7 +20,7 @@ class Linkage {
     this.positions = {};
   }
 
-  getPath(id: string) {
+  getPath(id: string): ?Array<Point> {
     // save current state
     var oldInputs = Object.keys(this.spec.extenders).map(id => {
       return {
@@ -33,7 +33,11 @@ class Linkage {
     var size = Math.PI*2/speed;
     var path = [];
     for (var i = 0; i < size; i++) {
-      this.tryRotatingLinkageInput();
+      var success = this.tryRotatingLinkageInput();
+      if (!success) {
+        path = null;
+        break;
+      }
       path.push(this.getPoint(id));
     }
 

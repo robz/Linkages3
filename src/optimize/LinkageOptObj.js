@@ -18,15 +18,16 @@ type DataType = {
 };
 
 class LinkageOptObj extends OptObj {
-  _linkage: Linkage;
+  linkage: Linkage;
 
   constructor(data: DataType): void {
     super(data);
-    this._linkage = new Linkage(data.linkageSpec);
+    this.linkage = new Linkage(data.linkageSpec);
   }
 
   __calcPerf(): number {
-    var path1 = this._linkage.getPath(this.__data.id);
+    var path1 = this.linkage.getPath(this.__data.id);
+    throwIf(path1 !== null, 'incomplete loop');
     var path2 = this.__data.path;
 
     throwIf(path1.length >= 0, 'linkage path has to have points');
@@ -39,22 +40,49 @@ class LinkageOptObj extends OptObj {
     var that = this;
     var spec = this.__data.linkageSpec;
 
-    return Object.keys(spec.groundPoints).map(id => {
+    var {rotaries, extenders, groundPoints} = spec;
+    var groundIDs = Object.keys(groundPoints);
+    var extenderIDs = Object.keys(extenders);
+
+    return groundIDs.filter(id => {
+      // ensure that this ground point is not a reference
+      return extenderIDs.every(id2 => id !== extenders[id2].ref);
+    }).map(id => {
       var orig = spec.groundPoints[id];
 
       return () => {
+        var deltaX = (Math.random() - .5) * 2 * .5;
+        var deltaY = (Math.random() - .5) * 2 * .5;
+
         var point = {
-          x: orig.x + (Math.random() - .5) * 2,
-          y: orig.y + (Math.random() - .5) * 2,
+          x: orig.x + deltaX,
+          y: orig.y + deltaY,
         };
 
-        this._linkage.tryMovingGroundPoints([{id, point}]);
+        var moves = [{id, point}];
+
+        if (rotaries[id]) {
+          var refID = extenders[rotaries[id]].ref;
+          var refCurPoint = groundPoints[refID];
+          var refNextPoint = {
+            x: refCurPoint.x + deltaX,
+            y: refCurPoint.y + deltaY,
+          };
+          moves.push({point: refNextPoint, id: refID});
+        }
+
+        this.linkage.tryMovingGroundPoints(moves);
       };
     });
   }
 
   isValid(): boolean {
-    return true;
+    try {
+      this.calcPerfCached();
+      return true;
+    } catch (e) {
+      return false;
+    }
   }
 }
 

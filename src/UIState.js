@@ -12,9 +12,11 @@
 
 var Linkage = require('./Linkage');
 var LinkageRenderer = require('./LinkageRenderer');
+var LinkageOptObj = require('./optimize/LinkageOptObj');
 var KEYS = require('./KEYS');
 
 var mixinPointValidation = require('./mixinPointValidation');
+var optimizeStep = require('./optimize/optimizeStep');
 
 var MAX_TRACE_POINTS = 100;
 
@@ -249,47 +251,50 @@ class OptimizeState extends PausedState {
   draw(renderer: LinkageRenderer, mousePoint: Point): void {
     super.draw(renderer, mousePoint);
 
-    if (this.drawnPoints) {
-      renderer.drawLines(this.drawnPoints, traceOptions);
-      renderer.drawPoint(mousePoint, previewOptions);
+    if (this.__drawnPoints) {
+      renderer.drawLines(this.__drawnPoints, traceOptions);
     }
   }
 }
 
-class State15 extends OptimizeState { // initial optimize
-  onMouseDown(): ?BaseState {
-    return new State16(this.linkage);
-  }
-
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
-
-    renderer.drawPoint(mousePoint, previewOptions);
+class State15 extends OptimizeState { // select point to optimize
+  onAnyPointUp(p0id: string): ?BaseState {
+    return new State16(this.linkage, {p0id});
   }
 }
 
 class State16 extends OptimizeState { // draw optimize path
   constructor(linkage: Linkage, spec: StateSpec) {
     super(linkage, spec);
-    this.drawnPoints = [];
+    this.__drawnPoints = [];
+    this.pointPath = this.linkage.getPath(this.p0id);
   }
 
   onMouseDrag(mousePoint: Point): ?BaseState {
-    this.drawnPoints.push(mousePoint);
+    this.__drawnPoints.push(mousePoint);
     return this;
   }
 
   onMouseUp(mousePoint: Point): ?BaseState {
-    return new State17(this.linkage, {}, this.drawnPoints);
+    return new State17(this.linkage, {p0id: this.p0id}, this.__drawnPoints);
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+
+    renderer.drawLines(this.pointPath, traceOptions);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
+    renderer.drawPoint(mousePoint, previewOptions);
   }
 }
 
-class State17 extends OptimizeState {
+class State17 extends OptimizeState { // actually optimize
   constructor(linkage: Linkage, spec: StateSpec, drawnPoints: Array<Point>) {
     super(linkage, spec);
-    this.drawPoints = drawnPoints;
+    this.__drawnPoints = drawnPoints;
     this._stopOptimizing = false;
     this._startOptimization();
+    this.pointPath = this.linkage.getPath(this.p0id);
   }
 
   onKeyDown(key: number): ?BaseState {
@@ -298,72 +303,33 @@ class State17 extends OptimizeState {
   }
 
   _startOptimization() {
-    class Feature {
-      _linkage: Linkage;
-
-      tweak() {
-
-      }
-    }
-
-    class LinkageOptWrapper {
-      linkage: Linkage;
-      perf: number;
-
-      constructor(linkage: Linkage, desiredPath: Array<Point>): void {
-        this.perf = Number.MAX_VALUE;
-      }
-
-      getFeatures(): Array<Feature> {
-
-      }
-
-      isValid(): boolean {
-
-      }
-
-      calcPerf(): number {
-
-      }
-    }
-
-    var optimize = (linkage, prevPerf) => {
-      // copy the old thing
-      var newLinkageWrapper = new LinkageOptWrapper(linkage, this.drawPoints);
-
-      // loop through all features
-      newLinkageWrapper.getFeatures().forEach(feature => {
-        // tweak each one by a small random amount
-        feature.tweak();
-      });
-
-      // if the new thing is invalid,
-      if (!newLinkageWrapper.isValid()) {
-        // return the old thing and its performance
-        return {linkage, perf: prevPerf};
-      }
-
-      // if the performance of the new thing isn't better than the old thing's,
-      var newPerf = newLinkageWrapper.calcPerf();
-      if (newPerf >= prevPerf) { // (the lower the perf value the better)
-        // return the old thing and its performance
-        return {linkage, perf: prevPerf};
-      }
-
-      // return the new thing and its performance
-      return newLinkageWrapper;
-    };
+    var optObj = new LinkageOptObj({
+      path: this.__drawnPoints,
+      linkageSpec: this.linkage.spec,
+      id: this.p0id,
+    });
 
     var pauseTime = 0;
 
-    var iterate = () => {
+    var iterate = function () {
       if (!this._stopOptimizing) {
         setTimeout(iterate, pauseTime);
-        optimize();
+        optObj = optimizeStep(optObj);
+        this.linkage = optObj.linkage;
+        this.pointPath = this.linkage.getPath(this.p0id);
       }
     };
 
+    iterate = iterate.bind(this);
+
     setTimeout(iterate, pauseTime);
+  }
+
+  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+    super.draw(renderer, mousePoint);
+
+    renderer.drawLines(this.pointPath, traceOptions);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
   }
 }
 
