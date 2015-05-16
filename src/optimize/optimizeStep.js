@@ -6,7 +6,7 @@ function optimizeStep(thing: OptObj): OptObj {
   var newThing = thing.copy();
 
   // loop through all features and tweak them
-  newThing.getFeatures().forEach(f => f.tweak());
+  newThing.getFeatures().forEach(tweak => tweak());
 
   // if the new thing is now invalid,
   if (!newThing.isValid()) {

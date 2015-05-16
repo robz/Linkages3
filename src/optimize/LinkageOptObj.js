@@ -18,6 +18,8 @@ type DataType = {
 };
 
 class LinkageOptObj extends OptObj {
+  _linkage: Linkage;
+
   constructor(data: DataType): void {
     super(data);
     this._linkage = new Linkage(data.linkageSpec);
@@ -33,22 +35,20 @@ class LinkageOptObj extends OptObj {
     return calcSumOfMins(path1, path2) + calcSumOfMins(path2, path1);
   }
 
-  getFeatures(): Array<{tweak:Function}> {
+  getFeatures(): Array<Function> {
     var that = this;
     var spec = this.__data.linkageSpec;
 
     return Object.keys(spec.groundPoints).map(id => {
       var orig = spec.groundPoints[id];
 
-      return {
-        tweak() {
-          var point = {
-            x: orig.x + (Math.random() - .5) * 2,
-            y: orig.y + (Math.random() - .5) * 2,
-          };
+      return () => {
+        var point = {
+          x: orig.x + (Math.random() - .5) * 2,
+          y: orig.y + (Math.random() - .5) * 2,
+        };
 
-          that._linkage.tryMovingGroundPoints([{id, point}]);
-        }
+        this._linkage.tryMovingGroundPoints([{id, point}]);
       };
     });
   }

@@ -1,6 +1,6 @@
 module.exports = {
   points: {
-    p0: { 
+    p0: {
       p1: { len: 1 },
     },
     p1: {
@@ -17,7 +17,7 @@ module.exports = {
       ref: 'p0',
       angle: 0.0,
       len: 5,
-      speed: 0.04,
+      speed: 1,
     },
   },
   rotaries: {
@@ -25,6 +25,6 @@ module.exports = {
   },
   groundPoints: {
     p0: { x: 1, y: 0 },
-    p1: { x: 0, y: 0 }, 
+    p1: { x: 0, y: 0 },
   },
 };

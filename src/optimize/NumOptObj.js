@@ -21,10 +21,8 @@ class NumOptObj extends OptObj {
   getFeatures(): Array<{tweak:Function}> {
     var that = this;
     return this.__data.nums.map((e, i) => {
-      return {
-        tweak() {
-          that.__data.nums[i] += Math.round(10 * (Math.random() - .5));
-        }
+      return function () {
+        that.__data.nums[i] += Math.round(10 * (Math.random() - .5));
       };
     });
   }

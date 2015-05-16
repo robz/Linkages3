@@ -1,10 +1,8 @@
 /* @flow */
 
-var throwIf = require('../throwIf');
-
 class OptObj {
   __data: Object;
-  _perf: number;
+  _perf: ?number;
 
   constructor(data: Object): void {
     this.__data = data;
@@ -12,29 +10,31 @@ class OptObj {
   }
 
   calcPerfCached(): number {
-    if (this._perf !== null) {
+    if (typeof this._perf === 'number') {
       return this._perf;
     }
 
-    this._perf = this.__calcPerf();
-    return this._perf;
+    var perf = this.__calcPerf();
+    this._perf = perf;
+    return perf;
   }
 
   __calcPerf(): number {
-    throwIf(false, '_calcPerf not implemented');
+    throw new Error('__calcPerf not implemented');
   }
 
   copy(): OptObj {
     var dataCopy = JSON.parse(JSON.stringify(this.__data));
-    return new this.constructor(dataCopy);
+    var objCopy: any = new this.constructor(dataCopy);
+    return objCopy;
   }
 
   getFeatures(): Array<{tweak:Function}> {
-    throwIf(false, 'getFeatures not implemented');
+    throw new Error('getFeatures not implemented');
   }
 
   isValid(): boolean {
-    throwIf(false, 'isValid not implemented');
+    throw new Error('isValid not implemented');
   }
 }
 

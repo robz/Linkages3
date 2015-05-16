@@ -29,7 +29,8 @@ class Linkage {
       };
     });
 
-    var size = 100;
+    var speed = this.spec.extenders[Object.keys(this.spec.extenders)[0]].speed/20;
+    var size = Math.PI*2/speed;
     var path = [];
     for (var i = 0; i < size; i++) {
       this.tryRotatingLinkageInput();
@@ -88,6 +89,20 @@ class Linkage {
   }
 
   changeSpeed(factor: number, id?: string) {
+    switch (factor) {
+      case .9:
+        factor = .5;
+        break;
+      case 1.1:
+        factor = 2;
+        break;
+      case -1:
+        factor = -1;
+        break;
+      default:
+        throw new Error('factor not supported:' + factor);
+    }
+
     if (!id) {
       Object.keys(this.spec.extenders).forEach((id) => {
         this.spec.extenders[id].speed *= factor;
@@ -162,10 +177,10 @@ class Linkage {
 
     Object.keys(this.spec.extenders).forEach((id) => {
       var rotaryInput = this.spec.extenders[id];
-      rotaryInput.angle += rotaryInput.speed;
+      rotaryInput.angle += rotaryInput.speed/20;
       if (!this.calculatePositions()) {
         this.changeSpeed(-1, id.base);
-        rotaryInput.angle += rotaryInput.speed;
+        rotaryInput.angle += rotaryInput.speed/20;
         this.calculatePositions();
         flag = false;
       }
@@ -231,7 +246,7 @@ class Linkage {
       base: point1Id,
       ref: point0Id,
       angle: Math.atan(4/3),
-      speed: 0.04,
+      speed: 1,
       len: 5,
     };
     this.spec.groundPoints[point0Id] = {x: point1.x + 1, y: point1.y};
