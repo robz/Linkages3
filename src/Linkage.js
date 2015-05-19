@@ -142,6 +142,7 @@ class Linkage {
     });
 
     if (!this.calculatePositions()) {
+      console.error('wat');
       throw 'wat';
     }
   }

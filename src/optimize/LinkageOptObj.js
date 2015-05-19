@@ -23,6 +23,7 @@ class LinkageOptObj extends OptObj {
   constructor(data: DataType): void {
     super(data);
     this.linkage = new Linkage(data.linkageSpec);
+    this.linkage.calculatePositions();
   }
 
   __calcPerf(): number {
@@ -40,40 +41,65 @@ class LinkageOptObj extends OptObj {
     var that = this;
     var spec = this.__data.linkageSpec;
 
-    var {rotaries, extenders, groundPoints} = spec;
-    var groundIDs = Object.keys(groundPoints);
-    var extenderIDs = Object.keys(extenders);
+    var {points, rotaries, extenders, groundPoints} = spec;
+    var [groundIDs, extenderIDs, pointIDs] =
+      [groundPoints, extenders, points].map(Object.keys);
 
-    return groundIDs.filter(id => {
-      // ensure that this ground point is not a reference
-      return extenderIDs.every(id2 => id !== extenders[id2].ref);
-    }).map(id => {
-      var orig = spec.groundPoints[id];
+    var refPoints = {};
+    extenderIDs.forEach(id => {refPoints[extenders[id].ref] = true});
 
-      return () => {
-        var deltaX = (Math.random() - .5) * 2 * .5;
-        var deltaY = (Math.random() - .5) * 2 * .5;
+    var groundFeatures = groundIDs
+      .filter(id => !refPoints[id])
+      .map(id => {
+        var orig = spec.groundPoints[id];
 
-        var point = {
-          x: orig.x + deltaX,
-          y: orig.y + deltaY,
-        };
+        return () => {
+          var deltaX = (Math.random() - .5) * 2 * .5;
+          var deltaY = (Math.random() - .5) * 2 * .5;
 
-        var moves = [{id, point}];
-
-        if (rotaries[id]) {
-          var refID = extenders[rotaries[id]].ref;
-          var refCurPoint = groundPoints[refID];
-          var refNextPoint = {
-            x: refCurPoint.x + deltaX,
-            y: refCurPoint.y + deltaY,
+          var point = {
+            x: orig.x + deltaX,
+            y: orig.y + deltaY,
           };
-          moves.push({point: refNextPoint, id: refID});
-        }
 
-        this.linkage.tryMovingGroundPoints(moves);
-      };
-    });
+          var moves = [{id, point}];
+
+          if (rotaries[id]) {
+            var refID = extenders[rotaries[id]].ref;
+            var refCurPoint = groundPoints[refID];
+            var refNextPoint = {
+              x: refCurPoint.x + deltaX,
+              y: refCurPoint.y + deltaY,
+            };
+            moves.push({point: refNextPoint, id: refID});
+          }
+
+          this.linkage.tryMovingGroundPoints(moves);
+        };
+      });
+
+    var notGroundFeatures = pointIDs
+      .filter(id => !groundPoints[id] && !refPoints[id])
+      .map(id => {
+        var orig = this.linkage.positions[id];
+
+        return () => {
+          var deltaX = (Math.random() - .5) * 2 * .5;
+          var deltaY = (Math.random() - .5) * 2 * .5;
+
+          var point = {
+            x: orig.x + deltaX,
+            y: orig.y + deltaY,
+          };
+
+          this.linkage.moveNotGroundPoint(point, id)
+        };
+      });
+
+    return [
+      ...groundFeatures,
+      ...notGroundFeatures,
+    ];
   }
 
   isValid(): boolean {
