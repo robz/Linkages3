@@ -46,6 +46,12 @@ var traceOptions = {
   drawPoints: false,
 };
 
+var optimizePathOptions = {
+  lineColor: 'hotPink',
+  pointColor: 'magenta',
+  drawPoints: false,
+};
+
 class BaseState {
   static getInitialUnpausedState(linkage: Linkage) {
     return new UnpausedState(linkage);
@@ -272,8 +278,9 @@ class OptimizeState extends PausedState {
     super.draw(renderer, mouseInfo);
 
     if (this.__drawnPoints) {
-      renderer.drawLines(this.__drawnPoints, traceOptions);
+      renderer.drawLines(this.__drawnPoints, optimizePathOptions);
     }
+    renderer.drawLines(this.pointPath, traceOptions);
   }
 }
 
@@ -297,9 +304,8 @@ class State15 extends OptimizeState { // draw optimize path
     var {mousePoint} = mouseInfo;
     super.draw(renderer, mouseInfo);
 
-    renderer.drawLines(this.pointPath, traceOptions);
     renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
-    renderer.drawPoint(mousePoint, previewOptions);
+    renderer.drawPoint(mousePoint, optimizePathOptions);
   }
 }
 
@@ -343,7 +349,6 @@ class State16 extends OptimizeState { // actually optimize
   draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     super.draw(renderer, mouseInfo);
 
-    renderer.drawLines(this.pointPath, traceOptions);
     renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
   }
 }
@@ -534,7 +539,11 @@ class State4 extends PausedState { // point1
         }
       case KEYS.o:
       case KEYS.O:
-        return new State15(this.linkage, {p0id: this.p0id});
+        if (this.linkage.getPath(this.p0id)) {
+          return new State15(this.linkage, {p0id: this.p0id});
+        } else {
+          return this;
+        }
       case KEYS.SPACE:
         return new State12(this.linkage, {p0id: this.p0id});
       default:
