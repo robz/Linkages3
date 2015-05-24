@@ -159,10 +159,10 @@ class LinkageRenderer extends CanvasRenderer {
   drawLinkage ({points, positions}: Object) {
     this.__drawBackground();
 
-    Object.keys(points).forEach((pointID) => {
+    Object.keys(points).forEach(pointID => {
       var p0 = positions[pointID];
-      Object.keys(points[pointID]).forEach((pointID) => {
-        var pi = positions[pointID];
+      Object.keys(points[pointID]).forEach(pointIDi => {
+        var pi = positions[pointIDi];
         this.drawLine(p0, pi);
       });
     });

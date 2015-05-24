@@ -292,15 +292,21 @@ class State16 extends OptimizeState { // draw optimize path
 class State17 extends OptimizeState { // actually optimize
   constructor(linkage: Linkage, spec: StateSpec, drawnPoints: Array<Point>) {
     super(linkage, spec);
+    this.pointPath = this.linkage.getPath(this.p0id);
     this.__drawnPoints = drawnPoints;
     this._stopOptimizing = false;
     this._startOptimization();
-    this.pointPath = this.linkage.getPath(this.p0id);
   }
 
-  onKeyDown(key: number): ?BaseState {
+  onKeyUp(key: number): ?BaseState {
     this._stopOptimizing = true;
-    return super.onKeyDown(key);
+
+    switch (key) {
+      case KEYS.SPACE:
+        return new State12(this.linkage, {p0id: this.p0id});
+      default:
+        return super.onKeyUp(key);
+    }
   }
 
   _startOptimization() {
