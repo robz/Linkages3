@@ -30,7 +30,7 @@ class Linkage {
     });
 
     var speed = this.spec.extenders[Object.keys(this.spec.extenders)[0]].speed/20;
-    var size = Math.PI*2/speed;
+    var size = Math.abs(Math.PI*2/speed);
     var path = [];
     for (var i = 0; i < size; i++) {
       var success = this.tryRotatingLinkageInput();

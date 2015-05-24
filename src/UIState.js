@@ -229,9 +229,6 @@ class State0 extends PausedState { // initial paused
       case KEYS.R:
       case KEYS.r:
         return new State11(this.linkage);
-      case KEYS.o:
-      case KEYS.O:
-        return new State15(this.linkage);
       default:
         return this;
     }
@@ -258,13 +255,7 @@ class OptimizeState extends PausedState {
   }
 }
 
-class State15 extends OptimizeState { // select point to optimize
-  onAnyPointUp(p0id: string): ?BaseState {
-    return new State16(this.linkage, {p0id});
-  }
-}
-
-class State16 extends OptimizeState { // draw optimize path
+class State15 extends OptimizeState { // draw optimize path
   constructor(linkage: Linkage, spec: StateSpec) {
     super(linkage, spec);
     this.__drawnPoints = [];
@@ -277,7 +268,7 @@ class State16 extends OptimizeState { // draw optimize path
   }
 
   onMouseUp(mousePoint: Point): ?BaseState {
-    return new State17(this.linkage, {p0id: this.p0id}, this.__drawnPoints);
+    return new State16(this.linkage, {p0id: this.p0id}, this.__drawnPoints);
   }
 
   draw(renderer: LinkageRenderer, mousePoint: Point): void {
@@ -289,7 +280,7 @@ class State16 extends OptimizeState { // draw optimize path
   }
 }
 
-class State17 extends OptimizeState { // actually optimize
+class State16 extends OptimizeState { // actually optimize
   constructor(linkage: Linkage, spec: StateSpec, drawnPoints: Array<Point>) {
     super(linkage, spec);
     this.pointPath = this.linkage.getPath(this.p0id);
@@ -520,6 +511,9 @@ class State4 extends PausedState { // point1
         } else {
           return this;
         }
+      case KEYS.o:
+      case KEYS.O:
+        return new State15(this.linkage, {p0id: this.p0id});
       case KEYS.SPACE:
         return new State12(this.linkage, {p0id: this.p0id});
       default:
