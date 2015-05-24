@@ -10,13 +10,13 @@
  */
 'use strict';
 
-var Linkage = require('./Linkage');
-var LinkageRenderer = require('./LinkageRenderer');
-var LinkageOptObj = require('./optimize/LinkageOptObj');
+var Linkage = require('../Linkage');
+var LinkageRenderer = require('../graphics/LinkageRenderer');
+var LinkageOptObj = require('../optimize/LinkageOptObj');
 var KEYS = require('./KEYS');
 
 var mixinPointValidation = require('./mixinPointValidation');
-var optimizeStep = require('./optimize/optimizeStep');
+var optimizeStep = require('../optimize/optimizeStep');
 
 var MAX_TRACE_POINTS = 100;
 

@@ -1,7 +1,7 @@
 /* @flow */
 'use strict';
 
-var Geom = require('./GeometryUtils.js');
+var Geom = require('./math/GeometryUtils');
 
 type Point = {x: number; y: number};
 type LinkageSpecType = {

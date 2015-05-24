@@ -3,8 +3,7 @@
 var OptObj = require('./OptObj');
 var Linkage = require('../Linkage');
 
-var calcSumOfMins = require('../GeometryUtils').calcSumOfMins;
-var throwIf = require('../throwIf');
+var calcSumOfMins = require('../math/GeometryUtils').calcSumOfMins;
 
 type Point = {
   x: number;
@@ -28,11 +27,12 @@ class LinkageOptObj extends OptObj {
 
   __calcPerf(): number {
     var path1 = this.linkage.getPath(this.__data.id);
-    throwIf(path1 !== null, 'incomplete loop');
+    path1 === null && new Error('incomplete loop');
+
     var path2 = this.__data.path;
 
-    throwIf(path1.length >= 0, 'linkage path has to have points');
-    throwIf(path2.length >= 0, 'provided path has to have points');
+    path1.length === 0 && new Error('linkage path has to have points');
+    path2.length === 0 && new Error( 'provided path has to have points');
 
     return calcSumOfMins(path1, path2) + calcSumOfMins(path2, path1);
   }

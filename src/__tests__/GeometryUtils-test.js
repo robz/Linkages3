@@ -1,8 +1,8 @@
-jest.dontMock('../GeometryUtils');
+jest.dontMock('../math/GeometryUtils');
 
 describe('euclid', function() {
   it('finds the euclidean distance between two points', function() {
-    var euclid = require('../GeometryUtils').euclid;
+    var euclid = require('../math/GeometryUtils').euclid;
     expect(euclid({x:3, y:0}, {x:0, y:4})).toBe(5);
   });
 });
@@ -10,7 +10,7 @@ describe('euclid', function() {
 describe('calcFromTriangle', function() {
   it('calculates a point on a triangle from the side lengths and other points',
     function() {
-      var calcFromTriangle = require('../GeometryUtils').calcPointFromTriangle;
+      var calcFromTriangle = require('../math/GeometryUtils').calcPointFromTriangle;
 
       var res1 = calcFromTriangle({x:3, y:0}, {x:0, y:4}, 3, 4);
       expect(res1.sol1.x).toBeCloseTo(0, 1e-10);
@@ -26,7 +26,7 @@ describe('calcFromTriangle', function() {
 describe('calcSumOfMins', function() {
   it('sums distance with paths of only one point each',
     function () {
-      var calcSumOfMins = require('../GeometryUtils').calcSumOfMins;
+      var calcSumOfMins = require('../math/GeometryUtils').calcSumOfMins;
       var path1 = [
         {x:0,y:0},
       ];
@@ -40,7 +40,7 @@ describe('calcSumOfMins', function() {
 
   it('finds the min dist from a point in the first path to the second',
     function () {
-      var calcSumOfMins = require('../GeometryUtils').calcSumOfMins;
+      var calcSumOfMins = require('../math/GeometryUtils').calcSumOfMins;
       var path1 = [
         {x:0,y:0},
       ];
@@ -59,7 +59,7 @@ describe('calcSumOfMins', function() {
 
   it('sums mins',
     function () {
-      var calcSumOfMins = require('../GeometryUtils').calcSumOfMins;
+      var calcSumOfMins = require('../math/GeometryUtils').calcSumOfMins;
       var path1 = [
         {x:0,y:0},
         {x:0,y:8},

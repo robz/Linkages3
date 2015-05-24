@@ -1,5 +1,5 @@
 jest
-  .dontMock('../GeometryUtils')
+  .dontMock('../math/GeometryUtils')
   .dontMock('../Linkage');
 
 var linkageData = {

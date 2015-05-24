@@ -21,7 +21,7 @@ describe('LinkageOptObj', function() {
       optObj = nextOptObj;
     }
 
-    var euclid = require('../GeometryUtils').euclid;
+    var euclid = require('../math/GeometryUtils').euclid;
     var res = optObj.__data.linkageSpec.groundPoints.p1;
     var delta = euclid(res, goal);
     //console.log('delta: ' + delta);

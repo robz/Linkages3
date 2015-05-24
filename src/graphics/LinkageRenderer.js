@@ -1,8 +1,6 @@
 /* @flow */
 'use strict';
 
-var throwIf = require('./throwIf');
-
 type OptionsType = {
   pointColor?: string;
   lineColor?: string;

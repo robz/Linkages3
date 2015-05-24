@@ -1,7 +1,7 @@
 /* @flow */
 'use strict';
 
-var euclid = require('./GeometryUtils').euclid;
+var euclid = require('../math/GeometryUtils').euclid;
 
 var MIN_SEGMENT_LENGTH = 0.5;
 
@@ -45,7 +45,8 @@ function mixinPointValidation(points, functNames, that) {
   // replace each provided method (call it F) with new method (call it G) that
   // wraps F. G executes the validation function first, and if the validation
   // function returns true, G returns the result of calling F. otherwise, it
-  // returns the context of the method.
+  // returns the context of the method (resulting in a no-op for state
+  // transitions)
   functNames.forEach(functName => {
     var validateFunct = validateFuncts[functName];
     var originalFunct = that[functName];

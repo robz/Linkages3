@@ -3,9 +3,9 @@
 'use strict';
 
 var Linkage = require('./Linkage.js');
-var LinkageRenderer = require('./LinkageRenderer');
-var UI = require('./UI.js');
-var UIState = require('./UIState');
+var LinkageRenderer = require('./graphics/LinkageRenderer');
+var UI = require('./ui/UI.js');
+var UIState = require('./ui/UIState');
 
 var linkageData = require('./linkageData.js');
 

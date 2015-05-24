@@ -1,8 +1,8 @@
 /* @flow */
 'use strict';
 
-var Linkage = require('./Linkage');
-var LinkageRenderer = require('./LinkageRenderer');
+var Linkage = require('../Linkage');
+var LinkageRenderer = require('../graphics/LinkageRenderer');
 var LoggedUIEvent = require('./LoggedUIEvent');
 var UIState = require('./UIState');
 

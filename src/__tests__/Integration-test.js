@@ -56,8 +56,8 @@ describe('state behaviors and transitions', function() {
   function runTest(desc, initialSpec, eventLog, finalSpec) {
     it(desc, function () {
       var Linkage = require('../Linkage.js');
-      var UI = require('../UI.js');
-      var UIState = require('../UIState');
+      var UI = require('../ui/UI.js');
+      var UIState = require('../ui/UIState');
 
       // copy the initial spec (we expect the linkage to mutate it)
       var linkage = new Linkage(JSON.parse(JSON.stringify(initialSpec)));
