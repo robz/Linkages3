@@ -127,6 +127,7 @@ class UI {
     }
 
     this.state = newState ? newState : this.state;
+    this.setHovers(mousePoint);
   }
 
   onMouseUp(mousePoint: Point): void {
@@ -148,6 +149,7 @@ class UI {
     }
 
     this.state = newState ? newState : this.state;
+    this.setHovers(mousePoint);
   }
 
   onMouseMove(mousePoint: Point): void {

@@ -56,7 +56,7 @@ class BaseState {
   pointB: ?Point;
 
   constructor(linkage: Linkage, spec?: ?StateSpec) {
-    console.log(this.constructor);
+    //console.log(this.constructor);
     this.linkage = linkage;
 
     if (spec) {

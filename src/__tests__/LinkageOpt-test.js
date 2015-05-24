@@ -12,7 +12,7 @@ describe('LinkageOptObj', function() {
       id: 'p2',
     });
 
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 200; i++) {
       var nextOptObj = optimizeStep(optObj);
       var oldPerf = optObj.calcPerfCached();
       var newPerf = nextOptObj.calcPerfCached();

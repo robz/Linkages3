@@ -78,7 +78,7 @@ function calcPointFromTriangle(
 ): {sol1: Point; sol2: Point} {
   var a3 = euclid(p1, p2);
   if (a3 > a1 + a2) {
-    throw new Error('lengths of bars less that distance between joints');
+    throw new Error('lengths of bars less that distance between joints', p1, p2, a1, a2);
   }
 
   var alpha1 = Math.acos((a1*a1 + a3*a3 - a2*a2)/(2*a1*a3));
