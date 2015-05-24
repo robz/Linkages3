@@ -99,7 +99,16 @@ class UI {
   }
 
   animate(): void {
-    this.state.draw(this.renderer, this.mousePoint);
+    var mouseInfo = {mousePoint: this.mousePoint};
+
+    if (this.hoverSegmentIDs) {
+      mouseInfo.p0id = this.hoverSegmentIDs[0];
+      mouseInfo.p1id = this.hoverSegmentIDs[1];
+    } else if (this.hoverPointID) {
+      mouseInfo.p0id = this.hoverPointID;
+    }
+
+    this.state.draw(this.renderer, mouseInfo);
     window.requestAnimationFrame(this.animate.bind(this));
   }
 

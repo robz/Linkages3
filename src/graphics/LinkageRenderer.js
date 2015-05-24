@@ -129,28 +129,6 @@ class CanvasRenderer {
 
     this.ctx.restore();
   }
-
-  drawLines2(points: Array<Point>, options?: OptionsType) {
-    if (points.length === 0) {
-      return;
-    }
-
-    var {lineColor, lineWidth} = getOptions(options);
-    this.ctx.save();
-    this.ctx.strokeStyle = lineColor;
-    this.ctx.lineWidth = lineWidth;
-
-    this.ctx.beginPath();
-    this.ctx.moveTo(points[0].x, points[0].y);
-    points.forEach((point, i) => {
-      if (i !== 0) {
-        this.ctx.lineTo(point.x, point.y);
-      }
-    });
-    this.ctx.stroke();
-
-    this.ctx.restore();
-  }
 }
 
 class LinkageRenderer extends CanvasRenderer {

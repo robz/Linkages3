@@ -28,6 +28,12 @@ type StateSpec = {
   pointB?: Point;
 };
 
+type MouseInfo = {
+  mousePoint: Point;
+  p0id?: string;
+  p1id?: string;
+};
+
 var previewOptions = {
   lineColor: 'pink',
   pointColor: 'red',
@@ -56,7 +62,7 @@ class BaseState {
   pointB: ?Point;
 
   constructor(linkage: Linkage, spec?: ?StateSpec) {
-    //console.log(this.constructor);
+    console.log(this.constructor);
     this.linkage = linkage;
 
     if (spec) {
@@ -67,7 +73,7 @@ class BaseState {
     }
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     renderer.drawLinkage({
       positions: this.linkage.positions,
       points: this.linkage.spec.points,
@@ -94,9 +100,9 @@ class BaseState {
 }
 
 class UnpausedState extends BaseState {  // initial unpaused
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     this.linkage.tryRotatingLinkageInput();
-    super.draw(renderer, mousePoint);
+    super.draw(renderer, mouseInfo);
   }
 
   onKeyUp(key: number): ?BaseState {
@@ -129,8 +135,8 @@ class UnpausedState extends BaseState {  // initial unpaused
 }
 
 class State10 extends UnpausedState { // rotary selected moving
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
 
     var p1id = this.linkage.spec.rotaries[this.p0id];
     var p2id = this.linkage.spec.extenders[p1id].ref;
@@ -172,8 +178,8 @@ class State12 extends UnpausedState { // trace point
     this.tracePoints = [];
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
 
     // record the current position
     var curPoint = this.linkage.positions[this.p0id];
@@ -191,6 +197,23 @@ class State12 extends UnpausedState { // trace point
 }
 
 class PausedState extends BaseState {
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {p0id, p1id} = mouseInfo;
+    super.draw(renderer, mouseInfo);
+
+    if (p0id && p1id) {
+      renderer.drawLines(
+        [
+          this.linkage.positions[p0id],
+          this.linkage.positions[p1id],
+        ],
+        previewOptions
+      );
+    } else if (p0id) {
+      renderer.drawPoint(this.linkage.positions[p0id], previewOptions);
+    }
+  }
+
   onKeyUp(key: number): ?BaseState {
     switch (key) {
       case KEYS.SPACE:
@@ -236,18 +259,17 @@ class State0 extends PausedState { // initial paused
 }
 
 class OptimizeState extends PausedState {
-  onKeyDown(key: number): ?BaseState {
+  onKeyUp(key: number): ?BaseState {
     switch (key) {
-      case KEYS.o:
-      case KEYS.O:
-        return new State0(this.linkage);
+      case KEYS.SPACE:
+        return new State12(this.linkage, {p0id: this.p0id});
       default:
-        return this;
+        return super.onKeyUp(key);
     }
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
 
     if (this.__drawnPoints) {
       renderer.drawLines(this.__drawnPoints, traceOptions);
@@ -271,8 +293,9 @@ class State15 extends OptimizeState { // draw optimize path
     return new State16(this.linkage, {p0id: this.p0id}, this.__drawnPoints);
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
 
     renderer.drawLines(this.pointPath, traceOptions);
     renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
@@ -291,13 +314,7 @@ class State16 extends OptimizeState { // actually optimize
 
   onKeyUp(key: number): ?BaseState {
     this._stopOptimizing = true;
-
-    switch (key) {
-      case KEYS.SPACE:
-        return new State12(this.linkage, {p0id: this.p0id});
-      default:
-        return super.onKeyUp(key);
-    }
+    return super.onKeyUp(key);
   }
 
   _startOptimization() {
@@ -323,8 +340,8 @@ class State16 extends OptimizeState { // actually optimize
     setTimeout(iterate, pauseTime);
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
 
     renderer.drawLines(this.pointPath, traceOptions);
     renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
@@ -346,8 +363,8 @@ class State14 extends PausedState { // point down
     return this;
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
     renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
   }
 }
@@ -369,8 +386,9 @@ class State11 extends PausedState { // rotary hover
     return new State0(this.linkage);
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
 
     renderer.drawLines(
       [
@@ -402,8 +420,9 @@ class State1 extends PausedState { // canvas1
     return new State13(this.linkage, {pointA: this.pointA, p0id});
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
     renderer.drawLines([this.pointA, mousePoint], previewOptions);
   }
 }
@@ -425,8 +444,9 @@ class State13 extends PausedState { // canvas then point
     return new State0(this.linkage);
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
     renderer.drawLines(
       [
         this.pointA,
@@ -455,8 +475,9 @@ class State2 extends PausedState { // canvas1 + canvas2
     return new State0(this.linkage);
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
     renderer.drawLines([this.pointA, this.pointB], previewOptions);
     renderer.drawLines([this.pointB, mousePoint], previewOptions);
   }
@@ -477,8 +498,8 @@ class State3 extends PausedState { // ground down
     return this;
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
     renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
   }
 }
@@ -521,8 +542,9 @@ class State4 extends PausedState { // point1
     }
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
     renderer.drawLines(
       [
         this.linkage.getPoint(this.p0id),
@@ -550,8 +572,9 @@ class State5 extends PausedState { // point2
     return new State0(this.linkage);
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
     renderer.drawLines(
       [
         this.linkage.getPoint(this.p0id),
@@ -586,8 +609,9 @@ class State6 extends PausedState { // point1 + canvas1
     return new State0(this.linkage);
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
     renderer.drawLines(
       [
         this.linkage.getPoint(this.p0id),
@@ -629,8 +653,8 @@ class State7 extends PausedState { // rotary down
     return this;
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
     var p1id = this.linkage.spec.rotaries[this.p0id];
     var p2id = this.linkage.spec.extenders[p1id].ref;
     renderer.drawLines(
@@ -661,8 +685,8 @@ class State8 extends State0 { // rotary selected
     }
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    super.draw(renderer, mouseInfo);
     var p1id = this.linkage.spec.rotaries[this.p0id];
     var p2id = this.linkage.spec.extenders[p1id].ref;
     renderer.drawLines(
@@ -708,8 +732,9 @@ class State9 extends PausedState { // segment selected
     }
   }
 
-  draw(renderer: LinkageRenderer, mousePoint: Point): void {
-    super.draw(renderer, mousePoint);
+  draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
+    var {mousePoint} = mouseInfo;
+    super.draw(renderer, mouseInfo);
     renderer.drawLines(
       [
         mousePoint,
