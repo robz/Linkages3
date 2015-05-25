@@ -68,7 +68,7 @@ class BaseState {
   pointB: ?Point;
 
   constructor(linkage: Linkage, spec?: ?StateSpec) {
-    console.log(this.constructor);
+    //console.log(this.constructor);
     this.linkage = linkage;
 
     if (spec) {
@@ -374,7 +374,7 @@ class State14 extends PausedState { // point down
   }
 }
 
-class State11 extends PausedState { // rotary hover
+class State11 extends PausedState { // adding rotary
   onKeyUp(key: number): ?BaseState {
     switch (key) {
       case KEYS.R:

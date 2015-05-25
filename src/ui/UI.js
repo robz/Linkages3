@@ -174,16 +174,19 @@ class UI {
   onKeyUp(which: number): void {
     var newState = this.state.onKeyUp(which);
     this.state = newState ? newState : this.state;
+    this.mousePoint && this.setHovers(this.mousePoint);
   }
 
   onKeyDown(which: number): void {
     var newState = this.state.onKeyDown(which);
     this.state = newState ? newState : this.state;
+    this.mousePoint && this.setHovers(this.mousePoint);
   }
 
   onKeyPress(which: number): void {
     var newState = this.state.onKeyPress(which);
     this.state = newState ? newState : this.state;
+    this.mousePoint && this.setHovers(this.mousePoint);
   }
 
   setHovers(currentPoint: Point): void {
