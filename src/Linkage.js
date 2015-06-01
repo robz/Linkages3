@@ -2,6 +2,7 @@
 'use strict';
 
 var Geom = require('./math/GeometryUtils');
+var smallestNumberDivisibleBy = require('./math/smallestNumberDivisibleBy');
 
 type Point = {x: number; y: number};
 type LinkageSpecType = {
@@ -21,6 +22,41 @@ class Linkage {
   }
 
   getPath(id: string): ?Array<Point> {
+    var extenders = this.spec.extenders;
+
+    // save current state
+    var oldInputs = Object.keys(extenders).map(id => {
+      return {
+        id,
+        angle: extenders[id].angle,
+      };
+    });
+
+    var speed = 1/20; // TODO: make this a constant somewhere
+    var speeds = Object.keys(extenders).map(extID => extenders[extID].speed);
+    var numRotations = smallestNumberDivisibleBy(speeds);
+
+    var size = Math.abs(Math.PI*2/speed);
+    var path = [];
+    for (var i = 0; i < size * numRotations; i++) {
+      var success = this.tryRotatingLinkageInput();
+      if (!success) {
+        path = null;
+        break;
+      }
+      path.push(this.getPoint(id));
+    }
+
+    // restore old state
+    oldInputs.forEach(o => {
+      extenders[o.id].angle = o.angle;
+    });
+    this.calculatePositions();
+
+    return path;
+  }
+
+  getPathO(id: string): ?Array<Point> {
     // save current state
     var oldInputs = Object.keys(this.spec.extenders).map(id => {
       return {
@@ -30,6 +66,7 @@ class Linkage {
     });
 
     var speed = this.spec.extenders[Object.keys(this.spec.extenders)[0]].speed/20;
+    console.log('speed:', speed);
     var size = Math.abs(Math.PI*2/speed);
     var path = [];
     for (var i = 0; i < size; i++) {
