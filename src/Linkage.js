@@ -92,28 +92,55 @@ class Linkage {
     return this.positions[id];
   }
 
-  changeSpeed(factor: number, id?: string) {
-    switch (factor) {
-      case .9:
-        factor = .5;
-        break;
-      case 1.1:
-        factor = 2;
-        break;
-      case -1:
-        factor = -1;
-        break;
-      default:
-        throw new Error('factor not supported:' + factor);
-    }
-
-    if (!id) {
-      Object.keys(this.spec.extenders).forEach((id) => {
-        this.spec.extenders[id].speed *= factor;
+  reverseRotary(rotID?: string) {
+    if (!rotID) {
+      // if an id was not provided, apply reversal to all rotaries
+      Object.keys(this.spec.extenders).forEach(id => {
+        this.spec.extenders[id].speed *= -1;
       });
     } else {
-      id = this.spec.rotaries[id];
-      this.spec.extenders[id].speed *= factor;
+      // otherwise just apply reversal to the provided rotary
+      var extID = this.spec.rotaries[rotID];
+      this.spec.extenders[extID].speed *= -1;
+    }
+  }
+
+  _changeRotarySpeed(difference: number, extID: string) {
+    var currentSpeed = this.spec.extenders[extID].speed;
+
+    switch (currentSpeed) {
+      case currentSpeed > 0 && currentSpeed:
+      case currentSpeed < 0 && currentSpeed:
+        break;
+      default:
+        throw new Error('rotary cannot be at zero speed!');
+    }
+
+    this.spec.extenders[extID].speed += difference;
+
+    if (this.spec.extenders[extID].speed === 0) {
+      // right now I don't allow zero-speed rotaries,
+      // so apply difference twice to prevent that
+      this.spec.extenders[extID].speed += difference;
+    }
+  }
+
+  changeSpeed(difference: number, rotID?: string) {
+    switch (difference) {
+      case 1: case -1: break;
+      default:
+        throw new Error('difference not supported:' + difference);
+    }
+
+    if (!rotID) {
+      // if an id was not provided, apply changes to all rotaries
+      Object.keys(this.spec.extenders).forEach(id => {
+        this._changeRotarySpeed(difference, id);
+      });
+    } else {
+      // otherwise just apply difference to the provided rotary
+      var extID = this.spec.rotaries[rotID];
+      this._changeRotarySpeed(difference, extID);
     }
   }
 
@@ -184,7 +211,7 @@ class Linkage {
       var rotaryInput = this.spec.extenders[id];
       rotaryInput.angle += rotaryInput.speed/20;
       if (!this.calculatePositions()) {
-        this.changeSpeed(-1, id.base);
+        this.reverseRotary(id.base);
         rotaryInput.angle += rotaryInput.speed/20;
         this.calculatePositions();
         flag = false;

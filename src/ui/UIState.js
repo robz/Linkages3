@@ -124,15 +124,15 @@ class UnpausedState extends BaseState {  // initial unpaused
     switch (key) {
       case KEYS.S:
       case KEYS.s:
-        this.linkage.changeSpeed(0.9);
+        this.linkage.changeSpeed(-1);
         return this;
       case KEYS.W:
       case KEYS.w:
-        this.linkage.changeSpeed(1.1);
+        this.linkage.changeSpeed(1);
         return this;
       case KEYS.T:
       case KEYS.t:
-        this.linkage.changeSpeed(-1);
+        this.linkage.reverseRotary();
         return this;
       default:
         return this;
@@ -160,15 +160,15 @@ class State10 extends UnpausedState { // rotary selected moving
     switch (key) {
       case KEYS.S:
       case KEYS.s:
-        this.linkage.changeSpeed(0.9, this.p0id);
+        this.linkage.changeSpeed(-1, this.p0id);
         return this;
       case KEYS.W:
       case KEYS.w:
-        this.linkage.changeSpeed(1.1, this.p0id);
+        this.linkage.changeSpeed(1, this.p0id);
         return this;
       case KEYS.T:
       case KEYS.t:
-        this.linkage.changeSpeed(-1, this.p0id);
+        this.linkage.reverseRotary(this.p0id);
         return this;
       default:
         return this;
