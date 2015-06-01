@@ -35,7 +35,9 @@ function smallestNumberDivisibleBy(list: Array<number>) {
     });
   });
 
-  return Object.keys(totalMap).reduce((a,f) => a*Math.pow(f, totalMap[f]), 1);
+  var res = 1;
+  Object.keys(totalMap).forEach(f => res *= Math.pow(f,totalMap[f]));
+  return res;
 }
 
 module.exports = smallestNumberDivisibleBy;
