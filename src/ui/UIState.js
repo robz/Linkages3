@@ -124,12 +124,10 @@ class UnpausedState extends BaseState {  // initial unpaused
     switch (key) {
       case KEYS.S:
       case KEYS.s:
-        console.log('s');
         this.linkage.scaleSpeed(.9);
         return this;
       case KEYS.W:
       case KEYS.w:
-        console.log('w');
         this.linkage.scaleSpeed(1.1);
         return this;
       case KEYS.T:
