@@ -15,10 +15,20 @@ type LinkageSpecType = {
 class Linkage {
   spec: LinkageSpecType;
   positions: {[key:string]: Point};
+  speed: number;
 
   constructor(spec: LinkageSpecType) {
     this.spec = spec;
     this.positions = {};
+    this.speed = 1/20;
+  }
+
+  scaleSpeed(scale: number) {
+    if (scale <= 0) {
+      throw new Error('can only scale speed by position amount');
+    }
+
+    this.speed *= scale;
   }
 
   getPath(id: string): ?Array<Point> {
@@ -32,11 +42,10 @@ class Linkage {
       };
     });
 
-    var speed = 1/20; // TODO: make this a constant somewhere
     var speeds = Object.keys(extenders).map(extID => extenders[extID].speed);
     var numRotations = smallestNumberDivisibleBy(speeds);
 
-    var size = Math.abs(Math.PI*2/speed);
+    var size = Math.abs(Math.PI*2/this.speed);
     var path = [];
     for (var i = 0; i < size * numRotations; i++) {
       var success = this.tryRotatingLinkageInput();
@@ -50,37 +59,6 @@ class Linkage {
     // restore old state
     oldInputs.forEach(o => {
       extenders[o.id].angle = o.angle;
-    });
-    this.calculatePositions();
-
-    return path;
-  }
-
-  getPathO(id: string): ?Array<Point> {
-    // save current state
-    var oldInputs = Object.keys(this.spec.extenders).map(id => {
-      return {
-        id,
-        angle: this.spec.extenders[id].angle,
-      };
-    });
-
-    var speed = this.spec.extenders[Object.keys(this.spec.extenders)[0]].speed/20;
-    console.log('speed:', speed);
-    var size = Math.abs(Math.PI*2/speed);
-    var path = [];
-    for (var i = 0; i < size; i++) {
-      var success = this.tryRotatingLinkageInput();
-      if (!success) {
-        path = null;
-        break;
-      }
-      path.push(this.getPoint(id));
-    }
-
-    // restore old state
-    oldInputs.forEach(o => {
-      this.spec.extenders[o.id].angle = o.angle;
     });
     this.calculatePositions();
 
@@ -145,12 +123,8 @@ class Linkage {
   _changeRotarySpeed(difference: number, extID: string) {
     var currentSpeed = this.spec.extenders[extID].speed;
 
-    switch (currentSpeed) {
-      case currentSpeed > 0 && currentSpeed:
-      case currentSpeed < 0 && currentSpeed:
-        break;
-      default:
-        throw new Error('rotary cannot be at zero speed!');
+    if (currentSpeed === 0) {
+      throw new Error('rotary cannot be at zero speed!');
     }
 
     this.spec.extenders[extID].speed += difference;
@@ -163,10 +137,8 @@ class Linkage {
   }
 
   changeSpeed(difference: number, rotID?: string) {
-    switch (difference) {
-      case 1: case -1: break;
-      default:
-        throw new Error('difference not supported:' + difference);
+    if (difference !== 1 && different !== -1) {
+      throw new Error('difference not supported:' + difference);
     }
 
     if (!rotID) {
@@ -206,8 +178,7 @@ class Linkage {
     });
 
     if (!this.calculatePositions()) {
-      console.error('wat');
-      throw 'wat';
+      throw new Error('wat');
     }
   }
 
@@ -246,10 +217,10 @@ class Linkage {
 
     Object.keys(this.spec.extenders).forEach((id) => {
       var rotaryInput = this.spec.extenders[id];
-      rotaryInput.angle += rotaryInput.speed/20;
+      rotaryInput.angle += rotaryInput.speed * this.speed;
       if (!this.calculatePositions()) {
         this.reverseRotary(id.base);
-        rotaryInput.angle += rotaryInput.speed/20;
+        rotaryInput.angle += rotaryInput.speed * this.speed;
         this.calculatePositions();
         flag = false;
       }
