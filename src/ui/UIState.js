@@ -5,8 +5,6 @@
  * tolerance for circular references. To solve this, we'd need to add our own
  * require or registrar system on top of CommonJS. I'll tackle that when this
  * file reaches 1000 lines or so.
- *
- * @flow
  */
 'use strict';
 
@@ -34,19 +32,19 @@ type MouseInfo = {
   p1id?: string;
 };
 
-var previewOptions = {
+var PREVIEW_OPTIONS = {
   lineColor: 'pink',
   pointColor: 'red',
   drawPoints: true,
 };
 
-var traceOptions = {
+var TRACE_OPTIONS = {
   lineColor: 'pink',
   pointColor: 'red',
   drawPoints: false,
 };
 
-var optimizePathOptions = {
+var OPTIMIZE_PATH_OPTIONS = {
   lineColor: 'hotPink',
   pointColor: 'magenta',
   drawPoints: false,
@@ -152,7 +150,7 @@ class State10 extends UnpausedState { // rotary selected moving
         this.linkage.getPoint(this.p0id),
         this.linkage.getPoint(p2id),
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 
@@ -197,8 +195,8 @@ class State12 extends UnpausedState { // trace point
       this.tracePoints.shift();
     }
 
-    renderer.drawLines(this.tracePoints, traceOptions);
-    renderer.drawPoint(curPoint, previewOptions);
+    renderer.drawLines(this.tracePoints, TRACE_OPTIONS);
+    renderer.drawPoint(curPoint, PREVIEW_OPTIONS);
   }
 }
 
@@ -213,10 +211,10 @@ class PausedState extends BaseState {
           this.linkage.positions[p0id],
           this.linkage.positions[p1id],
         ],
-        previewOptions
+        PREVIEW_OPTIONS
       );
     } else if (p0id) {
-      renderer.drawPoint(this.linkage.positions[p0id], previewOptions);
+      renderer.drawPoint(this.linkage.positions[p0id], PREVIEW_OPTIONS);
     }
   }
 
@@ -265,6 +263,9 @@ class State0 extends PausedState { // initial paused
 }
 
 class OptimizeState extends PausedState {
+  __drawnPoints: Array<Point>;
+  __pointPath: Array<Point>;
+
   onKeyUp(key: number): ?BaseState {
     switch (key) {
       case KEYS.SPACE:
@@ -276,11 +277,8 @@ class OptimizeState extends PausedState {
 
   draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     super.draw(renderer, mouseInfo);
-
-    if (this.__drawnPoints) {
-      renderer.drawLines(this.__drawnPoints, optimizePathOptions);
-    }
-    renderer.drawLines(this.pointPath, traceOptions);
+    renderer.drawLines(this.__drawnPoints, OPTIMIZE_PATH_OPTIONS);
+    renderer.drawLines(this.__pointPath, TRACE_OPTIONS);
   }
 }
 
@@ -288,7 +286,7 @@ class State15 extends OptimizeState { // draw optimize path
   constructor(linkage: Linkage, spec: StateSpec) {
     super(linkage, spec);
     this.__drawnPoints = [];
-    this.pointPath = this.linkage.getPath(this.p0id);
+    this.__pointPath = this.linkage.getPath(this.p0id);
   }
 
   onMouseDrag(mousePoint: Point): ?BaseState {
@@ -304,15 +302,17 @@ class State15 extends OptimizeState { // draw optimize path
     var {mousePoint} = mouseInfo;
     super.draw(renderer, mouseInfo);
 
-    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
-    renderer.drawPoint(mousePoint, optimizePathOptions);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), PREVIEW_OPTIONS);
+    renderer.drawPoint(mousePoint, OPTIMIZE_PATH_OPTIONS);
   }
 }
 
 class State16 extends OptimizeState { // actually optimize
+  _stopOptimizing: boolean;
+
   constructor(linkage: Linkage, spec: StateSpec, drawnPoints: Array<Point>) {
     super(linkage, spec);
-    this.pointPath = this.linkage.getPath(this.p0id);
+    this.__pointPath = this.linkage.getPath(this.p0id);
     this.__drawnPoints = drawnPoints;
     this._stopOptimizing = false;
     this._startOptimization();
@@ -337,7 +337,7 @@ class State16 extends OptimizeState { // actually optimize
         setTimeout(iterate, pauseTime);
         optObj = optimizeStep(optObj);
         this.linkage = optObj.linkage;
-        this.pointPath = this.linkage.getPath(this.p0id);
+        this.__pointPath = this.linkage.getPath(this.p0id);
       }
     };
 
@@ -349,7 +349,7 @@ class State16 extends OptimizeState { // actually optimize
   draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     super.draw(renderer, mouseInfo);
 
-    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), PREVIEW_OPTIONS);
   }
 }
 
@@ -370,7 +370,7 @@ class State14 extends PausedState { // point down
 
   draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     super.draw(renderer, mouseInfo);
-    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), PREVIEW_OPTIONS);
   }
 }
 
@@ -401,7 +401,7 @@ class State11 extends PausedState { // adding rotary
         mousePoint,
         {x: mousePoint.x + 1, y: mousePoint.y},
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }
@@ -428,7 +428,7 @@ class State1 extends PausedState { // canvas1
   draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     var {mousePoint} = mouseInfo;
     super.draw(renderer, mouseInfo);
-    renderer.drawLines([this.pointA, mousePoint], previewOptions);
+    renderer.drawLines([this.pointA, mousePoint], PREVIEW_OPTIONS);
   }
 }
 
@@ -458,7 +458,7 @@ class State13 extends PausedState { // canvas then point
         mousePoint,
         this.linkage.getPoint(this.p0id),
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }
@@ -483,8 +483,8 @@ class State2 extends PausedState { // canvas1 + canvas2
   draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     var {mousePoint} = mouseInfo;
     super.draw(renderer, mouseInfo);
-    renderer.drawLines([this.pointA, this.pointB], previewOptions);
-    renderer.drawLines([this.pointB, mousePoint], previewOptions);
+    renderer.drawLines([this.pointA, this.pointB], PREVIEW_OPTIONS);
+    renderer.drawLines([this.pointB, mousePoint], PREVIEW_OPTIONS);
   }
 }
 
@@ -505,7 +505,7 @@ class State3 extends PausedState { // ground down
 
   draw(renderer: LinkageRenderer, mouseInfo: MouseInfo): void {
     super.draw(renderer, mouseInfo);
-    renderer.drawPoint(this.linkage.getPoint(this.p0id), previewOptions);
+    renderer.drawPoint(this.linkage.getPoint(this.p0id), PREVIEW_OPTIONS);
   }
 }
 
@@ -559,7 +559,7 @@ class State4 extends PausedState { // point1
         this.linkage.getPoint(this.p0id),
         mousePoint,
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }
@@ -590,7 +590,7 @@ class State5 extends PausedState { // point2
         mousePoint,
         this.linkage.getPoint(this.p1id),
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }
@@ -627,7 +627,7 @@ class State6 extends PausedState { // point1 + canvas1
         this.pointA,
         mousePoint,
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }
@@ -672,7 +672,7 @@ class State7 extends PausedState { // rotary down
         this.linkage.getPoint(this.p0id),
         this.linkage.getPoint(p2id),
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }
@@ -704,7 +704,7 @@ class State8 extends State0 { // rotary selected
         this.linkage.getPoint(this.p0id),
         this.linkage.getPoint(p2id),
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }
@@ -751,7 +751,7 @@ class State9 extends PausedState { // segment selected
         this.linkage.getPoint(this.p1id),
         mousePoint,
       ],
-      previewOptions
+      PREVIEW_OPTIONS
     );
   }
 }

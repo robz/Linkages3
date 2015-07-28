@@ -7,8 +7,8 @@ function primeFactors(x: number): Object {
   for (var n = 2; n <= x; n++) {
     var count = 0;
 
-    while (res%n === 0) {
-      res = res/n;
+    while (res % n === 0) {
+      res = res / n;
       count += 1;
     }
 
@@ -20,24 +20,27 @@ function primeFactors(x: number): Object {
   return map;
 }
 
-function smallestNumberDivisibleBy(list: Array<number>) {
-  var totalMap = {};
+function smallestNumberDivisibleBy(list: Array<number>): number {
+  var occurences = {};
 
+  // find occurences of all prime factors for each number
   list.forEach(x => {
     var map = primeFactors(x);
     Object.keys(map).forEach(factor => {
       if (
-        typeof totalMap[factor] !== 'number' ||
-        totalMap[factor] < map[factor]
+        typeof occurences[factor] !== 'number' ||
+        occurences[factor] < map[factor]
       ) {
-        totalMap[factor] = map[factor];
+        occurences[factor] = map[factor];
       }
     });
   });
 
-  var res = 1;
-  Object.keys(totalMap).forEach(f => res *= Math.pow(f,totalMap[f]));
-  return res;
+  // multiply factors raised to their occurrence
+  return Object.keys(occurences).reduce(
+    (acc, f) => acc * Math.pow(f, occurences[f]),
+    1
+  );
 }
 
 module.exports = smallestNumberDivisibleBy;

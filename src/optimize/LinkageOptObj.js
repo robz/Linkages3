@@ -27,12 +27,20 @@ class LinkageOptObj extends OptObj {
 
   __calcPerf(): number {
     var path1 = this.linkage.getPath(this.__data.id);
-    path1 === null && new Error('incomplete loop');
+
+    if (!path1) {
+      throw new Error('incomplete loop');
+    }
 
     var path2 = this.__data.path;
 
-    path1.length === 0 && new Error('linkage path has to have points');
-    path2.length === 0 && new Error( 'provided path has to have points');
+    if (path1.length === 0) {
+      throw new Error('linkage path has to have points');
+    }
+
+    if (path2.length === 0) {
+      throw new Error('provided path has to have points');
+    }
 
     return calcSumOfMins(path1, path2) + calcSumOfMins(path2, path1);
   }
@@ -96,10 +104,7 @@ class LinkageOptObj extends OptObj {
         };
       });
 
-    return [
-      ...groundFeatures,
-      ...notGroundFeatures,
-    ];
+    return groundFeatures.concat(notGroundFeatures);
   }
 
   isValid(): boolean {

@@ -5,7 +5,16 @@ var euclid = require('../math/GeometryUtils').euclid;
 
 var MIN_SEGMENT_LENGTH = 0.5;
 
-function mixinPointValidation(points, functNames, that) {
+type Point = {
+  x: number;
+  y: number;
+};
+
+function mixinPointValidation(
+  points: Array<Point>,
+  functNames: Array<string>,
+  that: any
+) {
   var isPointValid = function(point) {
     return points.reduce((accum, p2) => {
       return accum && euclid(point, p2) >= MIN_SEGMENT_LENGTH;
@@ -17,7 +26,7 @@ function mixinPointValidation(points, functNames, that) {
       return isPointValid(point);
     },
 
-    onMouseUp(mousePoint: Point): boolean {
+    onMouseUp(point: Point): boolean {
       return isPointValid(point);
     },
 

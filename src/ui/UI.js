@@ -21,9 +21,9 @@ class UI {
   hoverGround: boolean;
   hoverRotary: boolean;
 
-  prevStateEvent: string;
+  prevStateName: string;
   stateHistory: Array<string>;
-  eventLog: Array<LoggedEvent>;
+  eventLog: Array<LoggedUIEvent>;
 
   // called from the browser console to extract logs
   logAndReset() {
@@ -99,13 +99,17 @@ class UI {
   }
 
   animate(): void {
-    var mouseInfo = {mousePoint: this.mousePoint};
+    var mouseInfo:any = {
+      mousePoint: this.mousePoint
+    };
 
-    if (this.hoverSegmentIDs) {
-      mouseInfo.p0id = this.hoverSegmentIDs[0];
-      mouseInfo.p1id = this.hoverSegmentIDs[1];
-    } else if (this.hoverPointID) {
-      mouseInfo.p0id = this.hoverPointID;
+    var {hoverSegmentIDs, hoverPointID} = this;
+
+    if (hoverSegmentIDs) {
+      mouseInfo.p0id = hoverSegmentIDs[0];
+      mouseInfo.p1id = hoverSegmentIDs[1];
+    } else if (hoverPointID) {
+      mouseInfo.p0id = hoverPointID;
     }
 
     this.state.draw(this.renderer, mouseInfo);

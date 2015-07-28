@@ -10,7 +10,10 @@ function euclid(p1: Point, p2: Point): number {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
-function calcSumOfMins(path1: Array<Point>, path2: Array<Point>) {
+function calcSumOfMins(
+  path1: Array<Point>,
+  path2: Array<Point>
+): number {
   var sum = 0;
 
   path1.forEach(p1 => {

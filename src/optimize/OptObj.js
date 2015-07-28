@@ -29,7 +29,7 @@ class OptObj {
     return objCopy;
   }
 
-  getFeatures(): Array<{tweak:Function}> {
+  getFeatures(): Array<Function> {
     throw new Error('getFeatures not implemented');
   }
 

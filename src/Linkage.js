@@ -137,7 +137,7 @@ class Linkage {
   }
 
   changeSpeed(difference: number, rotID?: string) {
-    if (difference !== 1 && different !== -1) {
+    if (difference !== 1 && difference !== -1) {
       throw new Error('difference not supported:' + difference);
     }
 
@@ -184,7 +184,7 @@ class Linkage {
 
   tryMovingGroundPoints(
     points: Array<{point: Point; id: string}>
-  ): boolean {
+  ) {
     var prevPoints = {};
 
     // move the ground points
