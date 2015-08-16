@@ -49,7 +49,7 @@ var State0_State1_State2_State0 = {
 // select a rotary and move it around
 var State0_State7_State8_State7_State0 = {
   initialSpec: {"points":{"p0":{"p1":{"len":1}},"p1":{"p0":{"len":1},"p2":{"len":5}},"p2":{"p1":{"len":5}}},"extenders":{"p2":{"base":"p1","ref":"p0","angle":7.549999999999981,"len":5,"speed":1}},"rotaries":{"p1":"p2"},"groundPoints":{"p0":{"x":1,"y":0,"id":"p0"},"p1":{"x":0,"y":0,"id":"p1"}}},
-  finalSpec: {"points":{"p0":{"p1":{"len":1}},"p1":{"p0":{"len":1},"p2":{"len":5}},"p2":{"p1":{"len":5}}},"extenders":{"p2":{"base":"p1","ref":"p0","angle":7.549999999999981,"len":5,"speed":1}},"rotaries":{"p1":"p2"},"groundPoints":{"p0":{"x":3.4999999999999982,"y":0.9999999999999921,"id":"p0"},"p1":{"x":2.5,"y":1,"id":"p1"}}},
+  finalSpec: {"points":{"p0":{"p1":{"len":1}},"p1":{"p0":{"len":1},"p2":{"len":5}},"p2":{"p1":{"len":5}}},"extenders":{"p2":{"base":"p1","ref":"p0","angle":7.549999999999981,"len":5,"speed":1}},"rotaries":{"p1":"p2"},"groundPoints":{"p0":{"x":3.5,"y":1,"id":"p0"},"p1":{"x":2.5,"y":1,"id":"p1"}}},
   eventLog: [{"handlerName":"onMouseMove","eventData":{"x":0,"y":0.1}},{"handlerName":"onMouseDown","eventData":{"x":0,"y":0.1}},{"handlerName":"onMouseUp","eventData":{"x":0,"y":0.1}},{"handlerName":"onMouseDown","eventData":{"x":0,"y":0.1}},{"handlerName":"onMouseMove","eventData":{"x":2.5,"y":1}},{"handlerName":"onMouseUp","eventData":{"x":2.5,"y":1}},{"handlerName":"onMouseMove","eventData":{"x":31.2,"y":-4.6}}],
 };
 
