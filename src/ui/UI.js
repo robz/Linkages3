@@ -21,17 +21,22 @@ class UI {
   hoverGround: boolean;
   hoverRotary: boolean;
 
-  prevStateName: string;
-  stateHistory: Array<string>;
+  stateLog: Array<string>;
   eventLog: Array<LoggedUIEvent>;
+  initialSpec: string;
 
   // called from the browser console to extract logs
   logAndReset() {
-    console.log(this.stateHistory.join('_'));
-    console.log(JSON.stringify(this.state.linkage.spec));
-    console.log(JSON.stringify(this.eventLog));
+    var name = this.stateLog.join('_');
+    var finalSpec = JSON.stringify(this.state.linkage.spec);
+    console.log(`var ${name} = {
+  initialSpec: ${this.initialSpec},
+  finalSpec: ${finalSpec},
+  eventLog: ${JSON.stringify(this.eventLog)},
+};`);
+    this.initialSpec = finalSpec;
     this.eventLog = [];
-    this.stateHistory = [];
+    this.stateLog = [];
   }
 
   constructor(
@@ -41,9 +46,8 @@ class UI {
     this.state = state;
     this.renderer = renderer;
     this.eventLog = [];
-
-    this.prevStateName = this.state.constructor.name;
-    this.stateHistory = [this.prevStateName];
+    this.stateLog = [this.state.constructor.name];
+    this.initialSpec = JSON.stringify(this.state.linkage.spec);
 
     // need to have initial positions calculated for hover to work
     this.state.linkage.calculatePositions();
@@ -63,39 +67,34 @@ class UI {
     // use it to make integration tests that are abstracted from the browser.
     // (see src/__tests__/Integration-test.js)
     //
-    var makeKeyHandler = name => {
-      return e => {
-        var key = e.which;
-        this.eventLog.push(new LoggedUIEvent(name, key));
-        (this: any)[name](key);
+    var makeHandler = (name, getData) =>
+      e => {
+        var data = getData(e);
 
-        if (this.prevStateName !== this.state.constructor.name) {
-          this.prevStateName = this.state.constructor.name;
-          this.stateHistory.push(this.prevStateName);
+        var prevEvent = this.eventLog.slice(-1)[0];
+        if (prevEvent && prevEvent.handlerName === name) {
+          this.eventLog.pop();
         }
-      };
-    };
+        this.eventLog.push(new LoggedUIEvent(name, data));
 
-    var makeMouseHandler = name => {
-      return e => {
-        var point = this.renderer.inverseTransform(e);
-        this.eventLog.push(new LoggedUIEvent(name, point));
-        (this: any)[name](point);
+        (this: any)[name](data);
 
-        if (this.prevStateName !== this.state.constructor.name) {
-          this.prevStateName = this.state.constructor.name;
-          this.stateHistory.push(this.prevStateName);
+        var stateName = this.state.constructor.name;
+        if (this.stateLog.slice(-1)[0] !== stateName) {
+          this.stateLog.push(stateName);
         }
-      };
-    };
+      }
+
+    var getKey = e => e.which;
+    var getMousePoint = e => this.renderer.inverseTransform(e);
 
     var doc: any = document;
-    doc.onkeyup = makeKeyHandler('onKeyUp');
-    doc.onkeydown = makeKeyHandler('onKeyDown');
-    doc.onkeypress = makeKeyHandler('onKeyPress');
-    doc.onmousemove = makeMouseHandler('onMouseMove');
-    doc.onmousedown = makeMouseHandler('onMouseDown');
-    doc.onmouseup = makeMouseHandler('onMouseUp');
+    doc.onkeyup = makeHandler('onKeyUp', getKey);
+    doc.onkeydown = makeHandler('onKeyDown', getKey);
+    doc.onkeypress = makeHandler('onKeyPress', getKey);
+    doc.onmousemove = makeHandler('onMouseMove', getMousePoint);
+    doc.onmousedown = makeHandler('onMouseDown', getMousePoint);
+    doc.onmouseup = makeHandler('onMouseUp', getMousePoint);
   }
 
   animate(): void {

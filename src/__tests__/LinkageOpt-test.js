@@ -25,6 +25,6 @@ describe('LinkageOptObj', function() {
     var res = optObj.__data.linkageSpec.groundPoints.p1;
     var delta = euclid(res, goal);
     //console.log('delta: ' + delta);
-    expect(delta).toBeLessThan(.25);
+    expect(delta).toBeLessThan(.5);
   });
 });
