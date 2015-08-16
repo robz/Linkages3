@@ -8,7 +8,7 @@ function optimizeStep(thing: OptObj): OptObj {
   // loop through all features and tweak them
   newThing.getFeatures().forEach(tweak => tweak());
 
-  // if the new thing is now invalid,
+  // if the new thing is not invalid,
   if (!newThing.isValid()) {
     // return the old thing
     return thing;

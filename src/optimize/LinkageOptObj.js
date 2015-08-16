@@ -42,6 +42,10 @@ class LinkageOptObj extends OptObj {
       throw new Error('provided path has to have points');
     }
 
+    return this.__calcPathPerf(path1, path2);
+  }
+
+  __calcPathPerf(path1: Array<Point>, path2: Array<Point>): number {
     return calcSumOfMins(path1, path2) + calcSumOfMins(path2, path1);
   }
 
