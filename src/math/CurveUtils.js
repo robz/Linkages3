@@ -20,7 +20,7 @@ function calcAnglesOfPath(path: Array<Point>): Array<number> {
   });
 }
 
-function ixLooped(arr: Array<any>, i: number): any {
+function ixLoop(arr: Array<any>, i: number): any {
  return arr[(i + arr.length) % arr.length];
 }
 
@@ -30,7 +30,7 @@ function smoothList(list: Array<number>, range: number): Array<number> {
   return list.map((num, index, arr) => {
     var sum = 0;
     for (var i = index - range; i <= index + range; i++) {
-      sum += ixLooped(arr, i);
+      sum += ixLoop(arr, i);
     }
     return sum / (range * 2 + 1);
   });
@@ -51,8 +51,8 @@ function totalDiff(
   return list1.reduce(
     (accum, e, i) => {
       return accum + Math.abs(
-        ixLooped(list1, i + list1Offset) -
-        ixLooped(list2, i + list2Offset)
+        ixLoop(list1, i + list1Offset) -
+        ixLoop(list2, i + list2Offset)
       );
     },
     0
@@ -82,7 +82,7 @@ function minTotalDiff(
 
 function interpolateBetweenPoints(p1: Point, p2: Point, len: number): Point {
   var totalLen = euclid(p1, p2);
-  if (len >= totalLen) {
+  if (len > totalLen) {
     throw new Error('the distance between the points is less than the length to interpolate');
   }
 
@@ -103,53 +103,56 @@ function findOffset(arr: Array<any>, offset: number, cond: Function): ?any {
   return -1;
 }
 
-function getNextPoint(path: Array<Point>, offset: number, len: number): Object {
+Array.prototype.find = function(cond) {
+  for (var i = 0; i < this.length; i++) {
+    if (cond(this[i], i)) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+function findPointsBetween(path, dist) {
+  var accum = 0;
+  var i1 = path.find((p, i) => {
+    var additional = euclid(p, ixLoop(path, i + 1));
+    if (dist <= accum + additional) {
+      return true;
+    }
+    accum += additional;
+    return false;
+  });
   return {
-    index: findOffset(path, offset, (point, index) => {
-      var segLen = euclid(point, ixLooped(path, index + 1));
-      if (len < segLen) {
-        return true;
-      } else {
-        len -= segLen;
-        return false;
-      }
-    }),
-    remainder: len,
+    i1,
+    i2: (i1 + 1) % path.length,
+    len: dist - accum,
   };
 }
 
 // outputs a list of points of length N that are interpolated along the input
 // path
-function buildInterpolatedPath(path: Array<Point>, count: number): Array<Point> {
-  var totalLength = path.reduce(
-    (accum, elem, index, arr) => {
-      return accum + euclid(elem, ixLooped(arr, index + 1))
-    },
-    0
-  );
-  var segLength = totalLength / count;
-  var outputPath = [];
-  var inputIndex = 0;
+function interpolatePath(path, numPoints) {
+  var totalLen = 0;
+  path.forEach((p, i) => {
+    totalLen += euclid(p, ixLoop(path, i + 1));
+  });
+  var segLen = totalLen / numPoints;
+  path = path.concat([path[0]]);
 
-  for (var i = 0; i < count; i++) {
-    var {remainder, index} = getNextPoint(path, inputIndex, segLength);
-    if (index === -1) {
-      throw new Error('we fucked up');
-    }
-    outputPath.push(interpolateBetweenPoints(
-      path[index],
-      ixLooped(path, index + 1),
-      remainder
-    ));
-    inputIndex = index;
+  var outputPath = [path[0]];
+  for (var ii = 0; ii < numPoints - 1; ii++) {
+    var {i1, i2, len} = findPointsBetween(path, segLen);
+    var point = interpolateBetweenPoints(path[i1], path[i2], len);
+    outputPath.push(point);
+    path = [point].concat(path.slice(i2, path.length));
   }
-
   return outputPath;
 }
 
 module.exports = {
   calcAnglesOfPath,
-  buildInterpolatedPath,
+  interpolateBetweenPoints,
+  interpolatePath,
   minTotalDiff,
   smoothList,
 };
