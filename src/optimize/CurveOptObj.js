@@ -4,7 +4,11 @@ var OptObj = require('./OptObj');
 var Linkage = require('../Linkage');
 var LinkageOptObj = require('./LinkageOptObj');
 
-var calcSumOfMins = require('../math/GeometryUtils').calcSumOfMins;
+var {
+  calcAnglesOfPath,
+  minTotalDiff,
+  smoothList,
+} = require('../math/CurveUtils');
 
 type Point = {
   x: number;
@@ -13,7 +17,11 @@ type Point = {
 
 class CurveOptObj extends LinkageOptObj {
   __calcPathPerf(path1: Array<Point>, path2: Array<Point>): number {
-    return calcSumOfMins(path1, path2) + calcSumOfMins(path2, path1);
+    var angles1 = smoothList(calcAnglesOfPath(path1), 2);
+    var angles2 = smoothList(calcAnglesOfPath(path2), 2);
+    var minForward = minTotalDiff(angles1, angles2);
+    var minBackward = minTotalDiff(angles1.reverse(), angles2);
+    return minForward < minBackward ? minForward : minBackward;
   }
 }
 

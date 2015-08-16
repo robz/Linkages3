@@ -2,7 +2,7 @@ jest.autoMockOff();
 
 describe('LinkageOptObj', function() {
   it('will incrementally optimize', function() {
-    var LinkageOptObj = require('../optimize/CurveOptObj');
+    var LinkageOptObj = require('../optimize/LinkageOptObj');
     var optimizeStep = require('../optimize/optimizeStep');
 
     var goal = {x:10,y:0};
