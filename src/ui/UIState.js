@@ -10,7 +10,7 @@
 
 var Linkage = require('../Linkage');
 var LinkageRenderer = require('../graphics/LinkageRenderer');
-var LinkageOptObj = require('../optimize/CurveOptObj');
+var LinkageOptObj = require('../optimize/LinkageOptObj');
 var KEYS = require('./KEYS');
 
 var mixinPointValidation = require('./mixinPointValidation');

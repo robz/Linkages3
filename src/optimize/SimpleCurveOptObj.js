@@ -30,9 +30,7 @@ class SimpleCurveOptObj extends OptObj {
   }
 
   __calcPathPerf(path1: Array<Point>, path2: Array<Point>): number {
-    var getAngles = path =>
-      calcAnglesOfPath(interpolatePath(path, 100))
-      //smoothList(interpolatePath(calcAnglesOfPath(path), 100), 2)
+    var getAngles = path => calcAnglesOfPath(interpolatePath(path, 100));
     var angles1 = getAngles(path1);
     var angles2 = getAngles(path2);
     var minForward = minTotalDiff(angles1, angles2);
@@ -43,16 +41,14 @@ class SimpleCurveOptObj extends OptObj {
 
   getFeatures(): Array<Function> {
     var path = this.__data.pathInput;
-    //return path.map((point, index) =>
-    var point = path[2];
-    return [
-      () => {
-        path[2] = {
+    return path.map((point, i) => {
+      return () => {
+        path[i] = {
           x: point.x + (RANGE * 2 * (Math.random() - .5)),
           y: point.y + (RANGE * 2 * (Math.random() - .5)),
         };
       }
-    ];
+    });
   }
 
   isValid(): boolean {
