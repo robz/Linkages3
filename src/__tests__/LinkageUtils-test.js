@@ -36,6 +36,26 @@ var linkageData = {
     p1: { x: 0, y: 0 },
     p4: { x: 22, y: -8 },
   },
+  solutionMap: {
+    p0: {
+      p2: {
+        p1: 0,
+      },
+    },
+    p2: {
+      p0: {
+        p1: 1,
+      },
+      p4: {
+        p3: 0,
+      },
+    },
+    p4: {
+      p2: {
+        p3: 1,
+      },
+    },
+  },
 };
 
 describe('calcLinkagePositions', function () {

@@ -143,7 +143,7 @@ var State0_State1_State13_State0 = {
 
 describe('state behaviors and transitions', function() {
   function runTest(desc, initialSpec, eventLog, finalSpec) {
-    it(desc, function () {
+    var testFunct = function () {
       var Linkage = require('../Linkage.js');
       var UI = require('../ui/UI.js');
       var UIState = require('../ui/UIState');
@@ -156,7 +156,13 @@ describe('state behaviors and transitions', function() {
       eventLog.forEach(event => ui[event.handlerName](event.eventData));
 
       expect(ui.state.linkage.spec).toEqual(finalSpec);
-    });
+    };
+
+    if (desc === 'State0_State14_State4_State6_State0') {
+      iit(desc, testFunct);
+    } else {
+      it(desc, testFunct);
+    }
   }
 
   runTest(

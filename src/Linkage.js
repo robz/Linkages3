@@ -293,8 +293,33 @@ class Linkage {
     this.spec.groundPoints[point1Id] = {x: point1.x, y: point1.y};
     this.spec.rotaries[point1Id] = point2Id;
 
+    this._addSolution(point0Id, point2Id, point1Id, 0);
+
     this._addSegment(point0Id, point1Id, 1);
     this._addSegment(point1Id, point2Id, 5);
+  }
+
+  _addSolution(
+    p1ID: string,
+    p2ID: string,
+    p3ID: string,
+    solutionIndex: number
+  ) {
+    if (!this.spec.solutionMap[p1ID]) {
+      this.spec.solutionMap[p1ID] = {};
+    }
+    if (!this.spec.solutionMap[p1ID][p2ID]) {
+      this.spec.solutionMap[p1ID][p2ID] = {};
+    }
+    this.spec.solutionMap[p1ID][p2ID][p3ID] = solutionIndex;
+
+    if (!this.spec.solutionMap[p2ID]) {
+      this.spec.solutionMap[p2ID] = {};
+    }
+    if (!this.spec.solutionMap[p2ID][p1ID]) {
+      this.spec.solutionMap[p2ID][p1ID] = {};
+    }
+    this.spec.solutionMap[p2ID][p1ID][p3ID] = solutionIndex ? 0 : 1;
   }
 
   addTriangle(
@@ -320,13 +345,14 @@ class Linkage {
       dist2To3
     );
 
+    var solutionIndex = 1;
     if (Geom.euclid(res.sol1, point3) < Geom.euclid(res.sol2, point3)) {
-      this._addSegment(point3Id, point1Id, dist1To3);
-      this._addSegment(point3Id, point2Id, dist2To3);
-    } else {
-      this._addSegment(point3Id, point2Id, dist2To3);
-      this._addSegment(point3Id, point1Id, dist1To3);
+      solutionIndex = 0;
     }
+    this._addSolution(point1Id, point2Id, point3Id, solutionIndex);
+
+    this._addSegment(point3Id, point1Id, dist1To3);
+    this._addSegment(point3Id, point2Id, dist2To3);
   }
 
   addGroundSegment(
@@ -359,15 +385,15 @@ class Linkage {
       distAuxToConnected
     );
 
+    var solutionIndex = 0;
     if (Geom.euclid(res.sol1, auxPoint) < Geom.euclid(res.sol2, auxPoint)) {
-      // TODO: use _addSegment here
-      this.spec.points[auxID][groundID] = {len: distGroundToAux};
-      this.spec.points[auxID][connectedID] = {len: distAuxToConnected};
-    } else {
-      this.spec.points[auxID][connectedID] = {len: distAuxToConnected};
-      this.spec.points[auxID][groundID] = {len: distGroundToAux};
+      solutionIndex = 1;
     }
+    this._addSolution(connectedID, groundID, auxID, solutionIndex);
 
+    // TODO: use _addSegment here
+    this.spec.points[auxID][connectedID] = {len: distAuxToConnected};
+    this.spec.points[auxID][groundID] = {len: distGroundToAux};
     this.spec.points[connectedID][auxID] = {len: distAuxToConnected};
   }
 
@@ -451,12 +477,13 @@ class Linkage {
           );
 
           if (knownAdjacents.length >= 2) {
+            var solutionIndex = spec.solutionMap[knownAdjacents[0]][knownAdjacents[1]][id];
             positions[id] = Geom.calcPointFromTriangle(
               positions[knownAdjacents[0]],
               positions[knownAdjacents[1]],
               points[id][knownAdjacents[0]].len,
               points[id][knownAdjacents[1]].len
-            ).sol1;
+            )['sol' + (solutionIndex + 1)];
           }
         }
 
