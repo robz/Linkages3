@@ -4,9 +4,21 @@
       body {
         margin: 0;
       }
+
+      button {
+        position: fixed;
+        top: 0;
+        margin: 10px;
+        border: 5px solid gray;
+      }
+
+      button:active {
+        border: 5px solid lightblue;
+      }
     </style>
   <body>
-    <canvas id="mycanvas"></canvas> 
+    <canvas id="mycanvas"></canvas>
+    <button id="button">save to url</button>
     <script src="build/bundle.js"></script>
   </body>
 </html>
